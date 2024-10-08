@@ -1,0 +1,12 @@
+/* Header.css */
+header {
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3); /* Optional shadow for depth */
+}
+
+header h1 {
+    color: #18e1e7; /* Color for the name */
+}
+
+header a:hover {
+    text-decoration: underline; /* Underline effect on hover */
+}
