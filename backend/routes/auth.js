@@ -74,4 +74,61 @@ router.post('/registerStudent', upload.single('profilePicture'), (req, res) => {
     });
 });
 
+// View Students
+router.get('/students', (req, res) => {
+    const sql = 'SELECT studentId, firstname, lastname, middlename, year, section, contactNumber, profilePicture FROM students';
+    db.query(sql, (err, results) => {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+
+        // Convert BLOB data to base64 string for each student
+        const students = results.map(student => ({
+            ...student,
+            profilePicture: student.profilePicture ? Buffer.from(student.profilePicture).toString('base64') : null
+        }));
+
+        res.status(200).json(students);
+    });
+});
+
+// Delete Student
+router.delete('/students/:studentId', (req, res) => {
+    const { studentId } = req.params;
+
+    db.query('DELETE FROM students WHERE studentId = ?', [studentId], (err, result) => {
+        if (err) {
+            return res.status(500).json({ message: 'Error deleting student' });
+        }
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'Student not found' });
+        }
+        res.status(200).json({ message: 'Student deleted successfully' });
+    });
+});
+
+// Update Student
+router.put('/students/:studentId', (req, res) => {
+    const { studentId } = req.params;
+    const { lastname, firstname, middlename, year, section, contactNumber } = req.body;
+
+    // Validate required fields
+    if (!lastname || !firstname || !studentId || !year || !section || !contactNumber) {
+        return res.status(400).json({ message: 'All fields are required' });
+    }
+
+    // Update query without profilePicture
+    const sql = 'UPDATE students SET lastname = ?, firstname = ?, middlename = ?, year = ?, section = ?, contactNumber = ? WHERE studentId = ?';
+    db.query(sql, [lastname, firstname, middlename, year, section, contactNumber, studentId], (err, result) => {
+        if (err) {
+            return res.status(500).json({ message: 'Error updating student' });
+        }
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'Student not found' });
+        }
+        res.status(200).json({ message: 'Student updated successfully' });
+    });
+});
+
+
 module.exports = router;
