@@ -11,7 +11,7 @@ app.use(bodyParser.json({ limit: '10mb' })); // Set the limit to 10MB
 app.use(bodyParser.urlencoded({ limit: '10mb', extended: true })); // For URL-encoded data
 
 // Routes
-app.use('/api/auth', require('./routes/auth'));
+app.use('/api/auth', require('./routes/auth')); // Ensure correct route file path
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
