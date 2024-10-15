@@ -9,7 +9,11 @@ const {
     updateStudent,
     addEvents,
     viewEvents,
-    deleteEvent, // Import the new addEvent function
+    deleteEvent,
+    checkIn,
+    checkOut,
+    viewAttendance,
+    getAttendanceReports,
 } = require('../controllers/controller');
 
 const router = express.Router();
@@ -35,8 +39,8 @@ router.delete('/students/:studentId', deleteStudent);
 
 // Update Student Route
 router.put('/students/:studentId', updateStudent);
-// Add Event Route
 
+// Add Event Route
 router.post('/event', addEvents);
 
 // Get Events Route
@@ -44,6 +48,18 @@ router.get('/events', viewEvents);
 
 // Delete Event Route
 router.delete('/event/:id', deleteEvent);
+
+// Check In Route
+router.post('/attendance/checkin', checkIn);
+
+// Check Out Route
+router.post('/attendance/checkout', checkOut);
+
+// View Attendance Route
+router.get('/attendance', viewAttendance);
+
+router.get('/reports', getAttendanceReports);
+
 
 
 module.exports = router;

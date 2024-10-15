@@ -198,7 +198,7 @@ const ViewStudents = () => {
                             id="qr-code-container"
                             className="flex flex-col items-center mb-4"
                             style={{
-                                background: 'linear-gradient(to bottom, #18e1e7, black)',
+                                background: '#18e1e7',
                                 width: '300px',
                                 height: '400px',
                                 padding: '20px',

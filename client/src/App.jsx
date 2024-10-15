@@ -1,17 +1,18 @@
 import React, { useEffect } from 'react';
-import Modal from 'react-modal'; // Import the Modal component
+import Modal from 'react-modal';
 import { Route, HashRouter as Router, Routes } from 'react-router-dom';
-import CalendarPage from './components/CalendarPage'; // Import the CalendarPage component
-import Dashboard from './components/Dashboard'; // Import the Dashboard component
-import Layout from './components/Layout'; // Import the Layout component
-import Login from './components/Login'; // Import the Login component
-import Register from './components/Register'; // Import the Register component
-import RegisterStudent from './components/RegisterStudent'; // Import the RegisterStudent component
-import ViewStudents from './components/ViewStudents'; // Import the ViewStudents component
-import './tailwind.css'; // Import Tailwind CSS styles
+import AttendanceReport from './components/AttendanceReport'; // Import AttendanceReport component
+import AttendanceScanner from './components/AttendanceScanner';
+import CalendarPage from './components/CalendarPage';
+import Dashboard from './components/Dashboard';
+import Layout from './components/Layout';
+import Login from './components/Login';
+import Register from './components/Register';
+import RegisterStudent from './components/RegisterStudent';
+import ViewStudents from './components/ViewStudents';
+import './tailwind.css';
 
-// Set the app element for accessibility purposes
-Modal.setAppElement('#root'); // Make sure this matches the ID of your main HTML element
+Modal.setAppElement('#root');
 
 const App = () => {
     useEffect(() => {
@@ -21,13 +22,14 @@ const App = () => {
     return (
         <Router>
             <Routes>
-                {/* Define your application routes here */}
                 <Route path="/" element={<Login />} />
                 <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
                 <Route path="/register" element={<Layout><Register /></Layout>} />
                 <Route path="/register-student" element={<Layout><RegisterStudent /></Layout>} />
                 <Route path="/view-students" element={<Layout><ViewStudents /></Layout>} />
-                <Route path="/calendar" element={<Layout><CalendarPage /></Layout>} /> {/* Add Calendar route */}
+                <Route path="/calendar" element={<Layout><CalendarPage /></Layout>} />
+                <Route path="/attendance" element={<Layout><AttendanceScanner /></Layout>} />
+                <Route path="/attendance-report" element={<Layout><AttendanceReport /></Layout>} /> {/* New Route */}
             </Routes>
         </Router>
     );

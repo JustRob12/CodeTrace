@@ -14,7 +14,7 @@ const loginAdmin = (req, res) => {
             if (err) return res.status(500).json({ message: 'Error comparing passwords' });
             if (!isMatch) return res.status(401).json({ message: 'Invalid credentials' });
 
-            const token = jwt.sign({ id: admin.id }, process.env.JWT_SECRET, { expiresIn: '5s' });
+            const token = jwt.sign({ id: admin.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
             res.json({ token });
         });
     });
@@ -201,10 +201,166 @@ const updateStudent = (req, res) => {
             responses.push({ message: 'Event deleted successfully' });
             res.status(200).json(responses);
         });
+        
+    };  
+    // const checkIn = (req, res) => {
+    //     const { studentId, eventId } = req.body;
+    //     const checkInTime = new Date();
+    
+    //     // Validate if the student exists
+    //     db.query('SELECT * FROM students WHERE studentId = ?', [studentId], (err, results) => {
+    //         if (err) return res.status(500).json({ message: 'Database error during student validation' });
+            
+    //         if (results.length === 0) {
+    //             return res.status(404).json({ message: 'Student not found. Please register first.' });
+    //         }
+    
+    //         // Check if the student has already checked in for the event
+    //         db.query('SELECT * FROM attendance WHERE studentId = ? AND event_id = ?', [studentId, eventId], (err, attendance) => {
+    //             if (err) return res.status(500).json({ message: 'Database error during attendance check' });
+                
+    //             if (attendance.length > 0) {
+    //                 return res.status(400).json({ message: 'Student already checked in for this event.' });
+    //             }
+    
+    //             // Insert check-in record
+    //             db.query(
+    //                 'INSERT INTO attendance (studentId, checkInTime, event_id) VALUES (?, ?, ?)',
+    //                 [studentId, checkInTime, eventId],
+    //                 (err) => {
+    //                     if (err) return res.status(500).json({ message: 'Error saving attendance' });
+    //                     res.status(201).json({ message: 'Check-in successful', checkInTime });
+    //                 }
+    //             );
+    //         });
+    //     });
+    // };
+
+    const checkIn = (req, res) => {
+        const { studentId, eventId } = req.body;
+        const checkInTime = new Date();
+    
+        // Step 1: Validate if the student exists
+        db.query('SELECT * FROM students WHERE studentId = ?', [studentId], (err, results) => {
+            if (err) return res.status(500).json({ message: 'Database error during student validation' });
+    
+            if (results.length === 0) {
+                return res.status(404).json({ message: 'Student not found. Please register first.' });
+            }
+    
+            // Step 2: Retrieve student's first name, middle name, and last name
+            const { firstname, middlename, lastname } = results[0];
+            console.log(`Found student: ${firstname} ${middlename || ''} ${lastname}`); // Log retrieved student names
+    
+            // Step 3: Check if the student has already checked in for the event
+            db.query('SELECT * FROM attendance WHERE studentId = ? AND event_id = ?', [studentId, eventId], (err, attendance) => {
+                if (err) return res.status(500).json({ message: 'Database error during attendance check' });
+    
+                if (attendance.length > 0) {
+                    return res.status(400).json({ message: 'Student already checked in for this event.' });
+                }
+    
+                // Step 4: Insert check-in record with names
+                db.query(
+                    'INSERT INTO attendance (studentId, firstname, middlename, lastname, checkInTime, event_id) VALUES (?, ?, ?, ?, ?, ?)',
+                    [studentId, firstname, middlename, lastname, checkInTime, eventId],
+                    (err) => {
+                        if (err) return res.status(500).json({ message: 'Error saving attendance' });
+                        res.status(201).json({ message: 'Check-in successful', checkInTime });
+                    }
+                );
+            });
+        });
     };
     
+    
+    
+
+// // Check Out Logic
+// const checkOut = (req, res) => {
+//     const { studentId, eventId } = req.body;
+//     const checkOutTime = new Date();
+//     console.log(studentId, eventId);
+    
+    
+//     // Check if the student has checked in for this event
+//     db.query('SELECT * FROM attendance WHERE studentId = ? AND event_id = ? AND checkOutTime IS NULL', [studentId, eventId], (err, results) => {
+//         if (err) return res.status(500).json({ message: 'Database error' });
+//         console.log(err);
+        
+        
+//         // If the student hasn't checked in, return an error message
+//         if (results.length === 0) {
+//             return res.status(400).json({results, message: 'Check-out failed. Ensure you have checked in first.' });
+//         }
+
+//         // Update the check-out time
+//         db.query('UPDATE attendance SET checkOutTime = ? WHERE studentId = ? AND event_id = ? AND checkOutTime IS NULL', [checkOutTime, studentId, eventId], (err, result) => {
+//             if (err) return res.status(500).json({ message: 'Error updating attendance' });
+//             if (result.affectedRows === 0) {
+//                 return res.status(400).json({ message: 'Check-out failed. Ensure you have checked in first.' });
+//             }
+//             res.status(200).json({ message: 'Check-out successful', checkOutTime });
+//         });
+//     });
+// };
+
+const checkOut = (req, res) => {
+    const { studentId, eventId } = req.body;
+    const checkOutTime = new Date();
+
+    // Check if the student has checked in for this event
+    db.query('SELECT * FROM attendance WHERE studentId = ? AND event_id = ? AND checkOutTime IS NULL', [studentId, eventId], (err, results) => {
+        if (err) return res.status(500).json({ message: 'Database error' });
+
+        // If the student hasn't checked in, return an error message
+        if (results.length === 0) {
+            return res.status(400).json({ message: 'Check-out failed. Ensure you have checked in first.' });
+        }
+
+        // Update the check-out time
+        db.query('UPDATE attendance SET checkOutTime = ? WHERE studentId = ? AND event_id = ? AND checkOutTime IS NULL', [checkOutTime, studentId, eventId], (err, result) => {
+            if (err) return res.status(500).json({ message: 'Error updating attendance' });
+            if (result.affectedRows === 0) {
+                return res.status(400).json({ message: 'Check-out failed. Ensure you have checked in first.' });
+            }
+            res.status(200).json({ message: 'Check-out successful', checkOutTime });
+        });
+    });
+};
 
 
+// View Attendance Logic
+// View Attendance Logic
+const viewAttendance = (req, res) => {
+    const sql = `
+        SELECT a.*, s.firstName, s.middleName, s.lastName 
+        FROM attendance a 
+        JOIN students s ON a.studentId = s.studentId
+    `;
+    db.query(sql, (err, results) => {
+        if (err) return res.status(500).json({ error: err.message });
+
+        res.status(200).json(results);
+    });
+};
+
+
+
+const getAttendanceReports = (req, res) => {
+    const sql = `
+        SELECT a.*, s.firstname, s.middlename, s.lastname 
+        FROM attendance a 
+        JOIN students s ON a.studentId = s.studentId`; // Assuming studentId in attendance matches id in students table
+
+    db.query(sql, (err, results) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.status(200).json(results);
+    });
+};
+  
+
+  
 
 
 // Export all functions
@@ -218,4 +374,9 @@ module.exports = {
     addEvents,
     viewEvents,
     deleteEvent,
+    checkIn,
+    checkOut,
+    viewAttendance,
+    getAttendanceReports
+
 };

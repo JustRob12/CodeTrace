@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FaBars, FaCalendarAlt, FaClipboardList, FaUserPlus } from 'react-icons/fa'; // FontAwesome icons
+import { FaBars, FaCalendarAlt, FaClipboardList, FaFileAlt, FaQrcode, FaUserPlus } from 'react-icons/fa'; // Import FaFileAlt
 import { Link } from 'react-router-dom';
 
 const Sidebar = () => {
@@ -23,7 +23,7 @@ const Sidebar = () => {
                         <Link 
                             to="/dashboard" 
                             className="flex items-center p-2 hover:bg-gray-700 hover:shadow-lg transition duration-300"
-                            title="Dashboard" // Tooltip label
+                            title="Dashboard"
                         >
                             <FaClipboardList className="text-xl icon" />
                             <span className={`${isExpanded ? 'ml-4' : 'hidden'} text-lg`}>Dashboard</span>
@@ -33,7 +33,7 @@ const Sidebar = () => {
                         <Link 
                             to="/register-student" 
                             className="flex items-center p-2 hover:bg-gray-700 hover:shadow-lg transition duration-300"
-                            title="Register Student" // Tooltip label
+                            title="Register Student"
                         >
                             <FaUserPlus className="text-xl icon" />
                             <span className={`${isExpanded ? 'ml-4' : 'hidden'} text-lg`}>Register Student</span>
@@ -43,7 +43,7 @@ const Sidebar = () => {
                         <Link 
                             to="/view-students" 
                             className="flex items-center p-2 hover:bg-gray-700 hover:shadow-lg transition duration-300"
-                            title="View Students" // Tooltip label
+                            title="View Students"
                         >
                             <FaClipboardList className="text-xl icon" />
                             <span className={`${isExpanded ? 'ml-4' : 'hidden'} text-lg`}>View Students</span>
@@ -53,7 +53,7 @@ const Sidebar = () => {
                         <Link 
                             to="/calendar" 
                             className="flex items-center p-2 hover:bg-gray-700 hover:shadow-lg transition duration-300"
-                            title="Calendar" // Tooltip label
+                            title="Calendar"
                         >
                             <FaCalendarAlt className="text-xl icon" />
                             <span className={`${isExpanded ? 'ml-4' : 'hidden'} text-lg`}>Calendar</span>
@@ -63,13 +63,22 @@ const Sidebar = () => {
                         <Link 
                             to="/attendance" 
                             className="flex items-center p-2 hover:bg-gray-700 hover:shadow-lg transition duration-300"
-                            title="Attendance" // Tooltip label
+                            title="Attendance Scanner"
                         >
-                            <FaClipboardList className="text-xl icon" />
-                            <span className={`${isExpanded ? 'ml-4' : 'hidden'} text-lg`}>Attendance</span>
+                            <FaQrcode className="text-xl icon" />
+                            <span className={`${isExpanded ? 'ml-4' : 'hidden'} text-lg`}>Attendance Scanner</span>
                         </Link>
                     </li>
-                   
+                    <li className="mb-4">
+                        <Link 
+                            to="/attendance-report" 
+                            className="flex items-center p-2 hover:bg-gray-700 hover:shadow-lg transition duration-300"
+                            title="Attendance Report"
+                        >
+                            <FaFileAlt className="text-xl icon" />
+                            <span className={`${isExpanded ? 'ml-4' : 'hidden'} text-lg`}>Attendance Report</span>
+                        </Link>
+                    </li>
                 </ul>
             </nav>
         </div>
