@@ -1,4 +1,6 @@
 import axios from "axios";
+import jsPDF from "jspdf"; // Import jsPDF
+import "jspdf-autotable"; // Import the autoTable plugin
 import React, { useEffect, useState } from "react";
 import { toast, Toaster } from "react-hot-toast";
 
@@ -75,9 +77,9 @@ const AttendanceReport = () => {
   };
 
   const handlePrint = () => {
-    const printWindow = window.open('', '_blank');
+    const printWindow = window.open("", "_blank");
     const eventTitle = getEventTitle(selectedEvent);
-    
+
     printWindow.document.write(`
       <html>
         <head>
@@ -104,26 +106,56 @@ const AttendanceReport = () => {
               </tr>
             </thead>
             <tbody>
-              ${filteredRecords.map(record => `
+              ${filteredRecords
+                .map(
+                  (record) => `
                 <tr>
                   <td>${eventTitle}</td>
                   <td>${record.studentId}</td>
-                  <td>${record.firstname} ${record.middlename || ''} ${record.lastname}</td>
+                  <td>${record.firstname} ${record.middlename || ""} ${record.lastname}</td>
                   <td>${record.year}</td>
                   <td>${new Date(record.checkInTime).toLocaleString("en-US")}</td>
-                  <td>${record.checkOutTime ? new Date(record.checkOutTime).toLocaleString("en-US") : 'N/A'}</td>
+                  <td>${record.checkOutTime ? new Date(record.checkOutTime).toLocaleString("en-US") : "N/A"}</td>
                 </tr>
-              `).join('')}
+              `
+                )
+                .join("")}
             </tbody>
           </table>
         </body>
       </html>
     `);
-    
+
     printWindow.document.close();
     printWindow.focus();
     printWindow.print();
     printWindow.close();
+  };
+
+  // Function to handle PDF export
+  const handleExportPDF = () => {
+    const doc = new jsPDF();
+    const eventTitle = getEventTitle(selectedEvent);
+    
+    doc.setFontSize(18);
+    doc.text(`${eventTitle} - Attendance Report`, 14, 22);
+    
+    // Add a table
+    doc.autoTable({
+      head: [['Event', 'Student ID', 'Full Name', 'Year', 'Check-in Time', 'Check-out Time']],
+      body: filteredRecords.map((record) => [
+        eventTitle,
+        record.studentId,
+        `${record.firstname} ${record.middlename || ""} ${record.lastname}`,
+        record.year,
+        new Date(record.checkInTime).toLocaleString("en-US"),
+        record.checkOutTime ? new Date(record.checkOutTime).toLocaleString("en-US") : "N/A",
+      ]),
+      startY: 30,
+    });
+
+    // Save the PDF
+    doc.save('attendance_report.pdf');
   };
 
   return (
@@ -131,102 +163,105 @@ const AttendanceReport = () => {
       <Toaster position="top-right" reverseOrder={false} />
       <h2 className="text-2xl font-bold mb-4">Attendance Report</h2>
 
-      {/* Filters */}
-      <div className="flex gap-4 mb-4 w-full">
-        {/* Student ID Search */}
-        <div className="flex-1">
-          <label className="block mb-2 text-lg font-medium">Search Student ID</label>
-          <input
-            type="text"
-            value={searchId}
-            onChange={handleSearchChange}
-            placeholder="Enter Student ID"
-            className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-          />
+      {/* Filters and Buttons */}
+      <div className="flex justify-between w-full mb-4">
+        {/* Left Side: Dropdowns */}
+        <div className="flex gap-4">
+          {/* Student ID Search */}
+          <div className="flex-1">
+            <label className="block mb-2 text-lg font-medium">Search Student ID</label>
+            <input
+              type="text"
+              value={searchId}
+              onChange={handleSearchChange}
+              placeholder="Enter Student ID"
+              className="w-full p-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+            />
+          </div>
+
+          {/* Event Filter */}
+          <div className="flex-1">
+            <label className="block mb-2 text-lg font-medium">Select Event</label>
+            <select
+              value={selectedEvent}
+              onChange={handleEventChange}
+              className="w-full p-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+            >
+              <option value="">All Events</option>
+              {events.map((event) => (
+                <option key={event.id} value={event.id}>
+                  {event.title}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Year Filter */}
+          <div className="flex-1">
+            <label className="block mb-2 text-lg font-medium">Select Year</label>
+            <select
+              value={selectedYear}
+              onChange={handleYearChange}
+              className="w-full p-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+            >
+              <option value="">All Years</option>
+              {years.map((year, index) => (
+                <option key={index} value={year}>
+                  {year}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
-        {/* Event Filter */}
-        <div className="flex-1">
-          <label className="block mb-2 text-lg font-medium">Select Event</label>
-          <select
-            value={selectedEvent}
-            onChange={handleEventChange}
-            className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+        {/* Right Side: Buttons */}
+        <div className="flex gap-2">
+          {/* Print Button */}
+          <button
+            onClick={handlePrint}
+            className="px-2 py-1 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700 transition"
+            disabled={!selectedEvent}
           >
-            <option value="">All Events</option>
-            {events.map((event) => (
-              <option key={event.id} value={event.id}>
-                {event.title}
-              </option>
-            ))}
-          </select>
-        </div>
+            Print
+          </button>
 
-        {/* Year Filter */}
-        <div className="flex-1">
-          <label className="block mb-2 text-lg font-medium">Select Year</label>
-          <select
-            value={selectedYear}
-            onChange={handleYearChange}
-            className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+          {/* Export PDF Button */}
+          <button
+            onClick={handleExportPDF}
+            className="p-1 bg-green-600 text-white rounded-md text-sm hover:bg-green-700 transition"
+            disabled={filteredRecords.length === 0}
           >
-            <option value="">All Years</option>
-            {years.map((year, index) => (
-              <option key={index} value={year}>
-                {year}
-              </option>
-            ))}
-          </select>
+            Export PDF
+          </button>
         </div>
-      </div>
-
-      {/* Print Button */}
-      <div className="mb-4">
-        <button 
-          onClick={handlePrint} 
-          className="p-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
-          disabled={!selectedEvent}
-        >
-          Print Attendance Report
-        </button>
       </div>
 
       {/* Attendance Records Table */}
       <div className="w-full mt-6">
         <div className="border border-gray-300 rounded-md p-4 h-64 overflow-y-auto">
           {filteredRecords.length === 0 ? (
-            <p>No attendance records available.</p>
+            <p>No attendance records found.</p>
           ) : (
-            <table className="w-full text-left">
+            <table className="min-w-full border-collapse">
               <thead>
                 <tr>
-                  <th className="border-b p-2">Event</th>
-                  <th className="border-b p-2">Student ID</th>
-                  <th className="border-b p-2">Full Name</th>
-                  <th className="border-b p-2">Year</th>
-                  <th className="border-b p-2">Check-in</th>
-                  <th className="border-b p-2">Check-out</th>
+                  <th className="border px-4 py-2">Event</th>
+                  <th className="border px-4 py-2">Student ID</th>
+                  <th className="border px-4 py-2">Full Name</th>
+                  <th className="border px-4 py-2">Year</th>
+                  <th className="border px-4 py-2">Check-in Time</th>
+                  <th className="border px-4 py-2">Check-out Time</th>
                 </tr>
               </thead>
               <tbody>
-                {filteredRecords.map((record, index) => (
-                  <tr key={index}>
-                    <td className="border-b p-2">{getEventTitle(record.event_id)}</td>
-                    <td className="border-b p-2">{record.studentId}</td>
-                    <td className="border-b p-2">
-                      {record.firstname}{" "}
-                      {record.middlename ? `${record.middlename} ` : ""}
-                      {record.lastname}
-                    </td>
-                    <td className="border-b p-2">{record.year}</td>
-                    <td className="border-b p-2">
-                      {new Date(record.checkInTime).toLocaleString("en-US")}
-                    </td>
-                    <td className="border-b p-2">
-                      {record.checkOutTime
-                        ? new Date(record.checkOutTime).toLocaleString("en-US")
-                        : "N/A"}
-                    </td>
+                {filteredRecords.map((record) => (
+                  <tr key={record.studentId}>
+                    <td className="border px-4 py-2">{getEventTitle(record.event_id)}</td>
+                    <td className="border px-4 py-2">{record.studentId}</td>
+                    <td className="border px-4 py-2">{`${record.firstname} ${record.middlename || ""} ${record.lastname}`}</td>
+                    <td className="border px-4 py-2">{record.year}</td>
+                    <td className="border px-4 py-2">{new Date(record.checkInTime).toLocaleString("en-US")}</td>
+                    <td className="border px-4 py-2">{record.checkOutTime ? new Date(record.checkOutTime).toLocaleString("en-US") : "N/A"}</td>
                   </tr>
                 ))}
               </tbody>

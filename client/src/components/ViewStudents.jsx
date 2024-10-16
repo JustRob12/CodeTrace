@@ -163,6 +163,7 @@ const ViewStudents = () => {
                         <p><strong>Year:</strong> {selectedStudent.year}</p>
                         <p><strong>Section:</strong> {selectedStudent.section}</p>
                         <p><strong>Contact Number:</strong> {selectedStudent.contactNumber}</p>
+                        <p><strong>Gmail:</strong> {selectedStudent.gmail}</p>
 
                         <div className="mt-4 flex space-x-2">
                             <button

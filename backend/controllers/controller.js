@@ -46,34 +46,54 @@ const registerAdmin = async (req, res) => {
 
 // Student Registration Logic
 const registerStudent = (req, res) => {
-    const { lastname, firstname, middlename, studentId, year, section, contactNumber } = req.body;
+    const { lastname, firstname, middlename, studentId, year, section, contactNumber, gmail } = req.body; // Include gmail
     const responses = [];
 
-   
-    if (!lastname || !firstname || !studentId || !year || !section || !contactNumber) {
+    // Check for required fields
+    if (!lastname || !firstname || !studentId || !year || !section || !contactNumber || !gmail) { // Check for Gmail
         responses.push({ message: 'All fields are required' });
         return res.status(400).json(responses);
     }
 
- 
+    // Check if the studentId is already registered
     db.query(
-        'INSERT INTO students (lastname, firstname, middlename, studentId, year, section, contactNumber) VALUES (?, ?, ?, ?, ?, ?, ?)', 
-        [lastname, firstname, middlename, studentId, year, section, contactNumber], 
-        (err) => {
+        'SELECT * FROM students WHERE studentId = ?', 
+        [studentId], 
+        (err, results) => {
             if (err) {
                 console.error('Database error:', err);
-                responses.push({ message: 'Error saving student' });
+                responses.push({ message: 'Error checking student ID' });
                 return res.status(500).json(responses);
             }
-            responses.push({ message: 'Student registered successfully' });
-            res.status(201).json(responses);
+
+            // If a record is found, send an alert message
+            if (results.length > 0) {
+                responses.push({ message: 'Student ID is already registered' });
+                return res.status(400).json(responses); // Return a 400 status with message
+            }
+
+            // Proceed to insert the new student record
+            db.query(
+                'INSERT INTO students (lastname, firstname, middlename, studentId, year, section, contactNumber, gmail) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', 
+                [lastname, firstname, middlename, studentId, year, section, contactNumber, gmail], 
+                (insertErr) => {
+                    if (insertErr) {
+                        console.error('Database error:', insertErr);
+                        responses.push({ message: 'Error saving student' });
+                        return res.status(500).json(responses);
+                    }
+                    responses.push({ message: 'Student registered successfully' });
+                    res.status(201).json(responses);
+                }
+            );
         }
     );
 };
 
+
 // View Students Logic
 const viewStudents = (req, res) => {
-    const sql = 'SELECT studentId, firstname, lastname, middlename, year, section, contactNumber FROM students';
+    const sql = 'SELECT studentId, firstname, lastname, middlename, year, section, contactNumber, gmail FROM students'; // Include gmail
     db.query(sql, (err, results) => {
         if (err) return res.status(500).json({ error: err.message });
 
@@ -85,11 +105,13 @@ const viewStudents = (req, res) => {
             year: student.year,
             section: student.section,
             contactNumber: student.contactNumber,
+            gmail: student.gmail, // Include gmail
         }));
 
         res.status(200).json(students);
     });
 };
+
 
 // Delete Student Logic
 const deleteStudent = (req, res) => {
@@ -113,17 +135,18 @@ const deleteStudent = (req, res) => {
 // Update Student Logic
 const updateStudent = (req, res) => {
     const { studentId } = req.params;
-    const { lastname, firstname, middlename, year, section, contactNumber } = req.body;
+    const { lastname, firstname, middlename, year, section, contactNumber, gmail } = req.body; // Include gmail
     const responses = [];
 
-    if (!lastname || !firstname || !studentId || !year || !section || !contactNumber) {
+    if (!lastname || !firstname || !studentId || !year || !section || !contactNumber || !gmail) { // Check for Gmail
         responses.push({ message: 'All fields are required' });
         return res.status(400).json(responses);
     }
 
-    const sql = 'UPDATE students SET lastname = ?, firstname = ?, middlename = ?, year = ?, section = ?, contactNumber = ? WHERE studentId = ?';
-    db.query(sql, [lastname, firstname, middlename, year, section, contactNumber, studentId], (err, result) => {
+    const sql = 'UPDATE students SET lastname = ?, firstname = ?, middlename = ?, year = ?, section = ?, contactNumber = ?, gmail = ? WHERE studentId = ?'; // Include gmail in update
+    db.query(sql, [lastname, firstname, middlename, year, section, contactNumber, gmail, studentId], (err, result) => {
         if (err) {
+            console.error('Database error:', err); // Log the error
             responses.push({ message: 'Error updating student' });
             return res.status(500).json(responses);
         }
@@ -135,6 +158,7 @@ const updateStudent = (req, res) => {
         res.status(200).json(responses);
     });
 };
+
 
 
     // Add Event Logic
