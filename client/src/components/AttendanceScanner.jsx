@@ -7,7 +7,6 @@ const AttendanceScanner = () => {
   const [events, setEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState("");
   const [checkInRecords, setCheckInRecords] = useState([]);
-  const [isScanning, setIsScanning] = useState(false);
   const lastScannedId = useRef("");
   const cooldownRef = useRef(false);
   const [scanStatus, setScanStatus] = useState("");
@@ -42,11 +41,9 @@ const AttendanceScanner = () => {
   };
 
   const handleEventChange = (e) => {
-    e.preventDefault(); // Prevent any default behavior
     setSelectedEvent(e.target.value);
-    setIsScanning(true); // Start scanning when event is selected
-    lastScannedId.current = ""; // Reset last scanned ID when event changes
-    setScanStatus(""); // Reset scan status when changing event
+    lastScannedId.current = "";
+    setScanStatus("");
   };
 
   const handleScan = async (data) => {
@@ -60,7 +57,10 @@ const AttendanceScanner = () => {
       if (studentId === lastScannedId.current) {
         await handleCheckOut(studentId);
       } else {
-        const hasCheckedIn = checkInRecords.some(record => record.studentId === studentId && record.eventId === selectedEvent);
+        const hasCheckedIn = checkInRecords.some(
+          (record) => record.studentId === studentId && record.eventId === selectedEvent
+        );
+
         if (!hasCheckedIn) {
           await handleCheckIn(studentId);
         } else {
@@ -70,9 +70,7 @@ const AttendanceScanner = () => {
 
       lastScannedId.current = studentId;
       setScanStatus("Success!");
-      setTimeout(() => {
-        setScanStatus("");
-      }, 2000);
+      setTimeout(() => setScanStatus(""), 2000);
     } finally {
       setTimeout(() => {
         cooldownRef.current = false;
@@ -94,7 +92,7 @@ const AttendanceScanner = () => {
         toast.error("Student not found.");
       }
     } catch (error) {
-      toast.error("Error checking in student.");
+      toast.error("You are already Attendance in this event");
     }
   };
 
@@ -112,58 +110,63 @@ const AttendanceScanner = () => {
         toast.error("Check-out failed. Ensure you have checked in first.");
       }
     } catch (error) {
-      toast.error("Error checking out student.");
+      toast.error("You are already Attendance in this event");
     }
   };
 
   return (
-    <div className="flex flex-col items-center p-6">
+    <div className="flex flex-row gap-6 p-6">
       <Toaster position="top-right" reverseOrder={false} />
-      <h2 className="text-2xl font-bold mb-4">Attendance Scanner</h2>
 
-      <div className="w-full max-w-sm mb-6">
-        <label className="block mb-2 text-lg font-medium">Select Event</label>
-        <select
-          value={selectedEvent}
-          onChange={handleEventChange}
-          className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-        >
-          <option value="" disabled>
-            -- Select an Event --
-          </option>
-          {events.map((event) => (
-            <option key={event.id} value={event.id}>
-              {event.title}
+      {/* Left Side: Scanner */}
+      <div className="w-1/3 flex flex-col items-center">
+        <h2 className="text-2xl font-bold mb-4">Attendance Scanner</h2>
+
+        <div className="w-full max-w-sm mb-4">
+          <label className="block mb-2 text-lg font-medium">Select Event</label>
+          <select
+            value={selectedEvent}
+            onChange={handleEventChange}
+            className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+          >
+            <option value="" disabled>
+              -- Select an Event --
             </option>
-          ))}
-        </select>
+            {events.map((event) => (
+              <option key={event.id} value={event.id}>
+                {event.title}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {selectedEvent && (
+          <div className="w-full">
+            <QrReader
+              onResult={(result, error) => {
+                if (result) handleScan(result);
+                if (error?.name !== "NotFoundError") console.error(error);
+              }}
+              style={{ width: "100%" }}
+            />
+          </div>
+        )}
+
+        {scanStatus && (
+          <div
+            className={`mt-4 p-2 rounded-md text-white ${
+              scanStatus === "Scan Success!" ? "bg-green-500" : "bg-blue-500"
+            }`}
+          >
+            {scanStatus}
+          </div>
+        )}
       </div>
 
-      {isScanning && (
-        <div className="w-full max-w-md">
-          <QrReader
-            onResult={(result, error) => {
-              if (result) handleScan(result);
-              if (error?.name !== "NotFoundError") console.error(error);
-            }}
-            style={{ width: "100%" }}
-          />
-        </div>
-      )}
-
-      {scanStatus && (
-        <div
-          className={`mt-4 p-2 rounded-md text-white ${
-            scanStatus === "Success!" ? "bg-green-500" : "bg-blue-500"
-          }`}
-        >
-          {scanStatus}
-        </div>
-      )}
-
-      <div className="w-full mt-6">
+      {/* Right Side: Check-in Records */}
+      <div className="w-2/3">
         <h3 className="text-lg font-semibold mb-2">Check-in Records</h3>
-        <div className="border border-gray-300 rounded-md p-4 h-64 overflow-y-auto">
+        <div className="border border-gray-300 rounded-md p-4 h-96 overflow-y-auto">
           {checkInRecords.length === 0 ? (
             <p>No check-in records available.</p>
           ) : (
@@ -174,6 +177,7 @@ const AttendanceScanner = () => {
                   <th className="border-b p-2">First Name</th>
                   <th className="border-b p-2">Middle Name</th>
                   <th className="border-b p-2">Last Name</th>
+                  <th className="border-b p-2">Year</th>
                   <th className="border-b p-2">Check-in</th>
                   <th className="border-b p-2">Check-out</th>
                 </tr>
@@ -185,6 +189,7 @@ const AttendanceScanner = () => {
                     <td className="border-b p-2">{record.firstName}</td>
                     <td className="border-b p-2">{record.middleName || "N/A"}</td>
                     <td className="border-b p-2">{record.lastName}</td>
+                    <td className="border-b p-2">{record.year}</td>
                     <td className="border-b p-2">
                       {new Date(record.checkInTime).toLocaleString("en-US")}
                     </td>

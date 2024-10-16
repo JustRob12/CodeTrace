@@ -14,6 +14,8 @@ const {
     checkOut,
     viewAttendance,
     getAttendanceReports,
+    getStudentCountsByYear,
+
 } = require('../controllers/controller');
 
 const router = express.Router();
@@ -59,6 +61,9 @@ router.post('/attendance/checkout', checkOut);
 router.get('/attendance', viewAttendance);
 
 router.get('/reports', getAttendanceReports);
+
+router.get('/counts', getStudentCountsByYear);
+
 
 
 

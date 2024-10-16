@@ -249,8 +249,8 @@ const updateStudent = (req, res) => {
             }
     
             // Step 2: Retrieve student's first name, middle name, and last name
-            const { firstname, middlename, lastname } = results[0];
-            console.log(`Found student: ${firstname} ${middlename || ''} ${lastname}`); // Log retrieved student names
+            const { firstname, middlename, lastname, year } = results[0];
+            console.log(`Found student: ${firstname} ${middlename || ''} ${lastname} ${year}`); // Log retrieved student names
     
             // Step 3: Check if the student has already checked in for the event
             db.query('SELECT * FROM attendance WHERE studentId = ? AND event_id = ?', [studentId, eventId], (err, attendance) => {
@@ -262,8 +262,8 @@ const updateStudent = (req, res) => {
     
                 // Step 4: Insert check-in record with names
                 db.query(
-                    'INSERT INTO attendance (studentId, firstname, middlename, lastname, checkInTime, event_id) VALUES (?, ?, ?, ?, ?, ?)',
-                    [studentId, firstname, middlename, lastname, checkInTime, eventId],
+                    'INSERT INTO attendance (studentId, firstname, middlename, lastname, year, checkInTime, event_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
+                    [studentId, firstname, middlename, lastname, year, checkInTime, eventId],
                     (err) => {
                         if (err) return res.status(500).json({ message: 'Error saving attendance' });
                         res.status(201).json({ message: 'Check-in successful', checkInTime });
@@ -358,7 +358,29 @@ const getAttendanceReports = (req, res) => {
         res.status(200).json(results);
     });
 };
-  
+
+const getStudentCountsByYear = (req, res) => {
+    const sql = `
+        SELECT year, COUNT(*) AS studentCount 
+        FROM students 
+        GROUP BY year
+    `;
+
+    db.query(sql, (err, results) => {
+        if (err) {
+            console.error('Database error:', err);
+            return res.status(500).json({ message: 'Internal server error' });
+        }
+
+        const countsByYear = results.map(row => ({
+            year: row.year,
+            count: row.studentCount
+        }));
+
+        res.status(200).json(countsByYear);
+    });
+};
+
 
   
 
@@ -377,6 +399,7 @@ module.exports = {
     checkIn,
     checkOut,
     viewAttendance,
-    getAttendanceReports
+    getAttendanceReports,
+    getStudentCountsByYear
 
 };
