@@ -2,8 +2,12 @@ import axios from "axios";
 import React, { useState } from "react";
 import { ToastContainer, toast } from "react-toastify"; // Import ToastContainer and toast
 import "react-toastify/dist/ReactToastify.css"; // Import CSS for toast notifications
+import ViewStudents from "./ViewStudents";
 
 const RegisterStudent = () => {
+
+
+
   const [formData, setFormData] = useState({
     lastname: "",
     firstname: "",
@@ -68,7 +72,9 @@ const RegisterStudent = () => {
     }
   };
 
+
   return (
+
     <div className="flex flex-col min-h-screen items-center justify-center bg-white-100">
       <div className="w-full max-w-4xl p-3 bg-white shadow-md rounded">
         <h2 className="text-2xl font-bold text-center mb-6">
@@ -165,10 +171,15 @@ const RegisterStudent = () => {
             {isSubmitting ? "Registering..." : "Register Student"}
           </button>
         </form>
+
+        <ViewStudents/>
       </div>
       <ToastContainer /> {/* Include ToastContainer to render the toasts */}
     </div>
-  );
+
+
+  )  
 };
+
 
 export default RegisterStudent;

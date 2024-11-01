@@ -17,9 +17,12 @@
     "@fullcalendar/react": "^6.1.15",
     "@fullcalendar/timegrid": "^6.1.15",
     "@radix-ui/react-alert-dialog": "^1.1.2",
+    "@tabler/icons-react": "^3.19.0",
     "axios": "^1.7.7",
     "chart.js": "^4.4.5",
+    "clsx": "^2.1.1",
     "cors": "^2.8.5",
+    "framer-motion": "^11.11.9",
     "html-to-image": "^1.11.11",
     "html2canvas": "^1.4.1",
     "jspdf": "^2.5.2",
@@ -36,7 +39,8 @@
     "react-qr-code": "^2.0.15",
     "react-qr-reader": "^3.0.0-beta-1",
     "react-router-dom": "^6.26.2",
-    "react-toastify": "^10.0.6"
+    "react-toastify": "^10.0.6",
+    "tailwind-merge": "^2.5.4"
   },
   "devDependencies": {
     "@eslint/js": "^9.11.1",

@@ -169,42 +169,43 @@ const CalendarPage = () => {
 
       {/* Modal for event details */}
       <Modal
-        isOpen={modalIsOpen}
-        onRequestClose={closeModal}
-        className="modal"
-        overlayClassName="overlay"
-      >
-        <div className="modal-content p-4">
-          <h2 className="text-xl font-semibold mb-2">Event Details</h2>
-          {selectedEvent ? (
-            <div className="event-details">
-              <p>
-                <strong>Title:</strong> {selectedEvent.title}
-              </p>
-              <p>
-                <strong>Start:</strong> {selectedEvent.start.toISOString()}
-              </p>
-              <p>
-                <strong>End:</strong> {selectedEvent.end.toISOString()}
-              </p>
-              <button
-                onClick={() => handleDeleteEvent(selectedEvent.id)}
-                className="mt-4 bg-red-500 text-white p-2 rounded-md hover:bg-red-600 transition duration-300"
-              >
-                Delete Event
-              </button>
-            </div>
-          ) : (
-            <p>Loading...</p>
-          )}
-          <button
-            onClick={closeModal}
-            className="mt-4 bg-gray-300 text-black p-2 rounded-md hover:bg-gray-400 transition duration-300"
-          >
-            Close
-          </button>
-        </div>
-      </Modal>
+  isOpen={modalIsOpen}
+  onRequestClose={closeModal}
+  className="modal"
+  overlayClassName="overlay"
+>
+  <div className="modal-content p-4">
+    <h2 className="text-xl font-semibold mb-2">Event Details</h2>
+    {selectedEvent ? (
+      <div className="event-details">
+        <p>
+          <strong>Title:</strong> {selectedEvent.title}
+        </p>
+        <p>
+          <strong>Start:</strong> {selectedEvent.start ? new Date(selectedEvent.start).toISOString() : "N/A"}
+        </p>
+        <p>
+          <strong>End:</strong> {selectedEvent.end ? new Date(selectedEvent.end).toISOString() : "N/A"}
+        </p>
+        <button
+          onClick={() => handleDeleteEvent(selectedEvent.id)}
+          className="mt-4 bg-red-500 text-white p-2 rounded-md hover:bg-red-600 transition duration-300"
+        >
+          Delete Event
+        </button>
+      </div>
+    ) : (
+      <p>Loading...</p>
+    )}
+    <button
+      onClick={closeModal}
+      className="mt-4 bg-gray-300 text-black p-2 rounded-md hover:bg-gray-400 transition duration-300"
+    >
+      Close
+    </button>
+  </div>
+</Modal>
+
     </div>
   );
 };

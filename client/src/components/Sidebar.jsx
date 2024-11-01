@@ -1,12 +1,11 @@
 import React from "react";
 import {
-    FaBars,
-    FaCalendarAlt,
-    FaClipboardList,
-    FaFileAlt,
-    FaHome,
-    FaQrcode,
-    FaUserPlus,
+  FaBars,
+  FaCalendarAlt,
+  FaFileAlt,
+  FaHome,
+  FaQrcode,
+  FaUserPlus
 } from "react-icons/fa";
 import { Link, useLocation } from "react-router-dom";
 
@@ -52,11 +51,11 @@ const Sidebar = ({ isExpanded, toggleSidebar }) => {
               label: "Register Student",
               icon: FaUserPlus,
             },
-            {
-              to: "/view-students",
-              label: "View Students",
-              icon: FaClipboardList,
-            },
+            // {
+            //   to: "/view-students",
+            //   label: "View Students",
+            //   icon: FaClipboardList,
+            // },
             { to: "/attendance", label: "Attendance Scanner", icon: FaQrcode },
             {
               to: "/attendance-report",

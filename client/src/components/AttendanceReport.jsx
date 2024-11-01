@@ -79,8 +79,8 @@ const AttendanceReport = () => {
   const handlePrint = () => {
     const printWindow = window.open("", "_blank");
     const eventTitle = getEventTitle(selectedEvent);
-
-    printWindow.document.write(`
+  
+    const printContent = `
       <html>
         <head>
           <title>Attendance Report</title>
@@ -109,28 +109,34 @@ const AttendanceReport = () => {
               ${filteredRecords
                 .map(
                   (record) => `
-                <tr>
-                  <td>${eventTitle}</td>
-                  <td>${record.studentId}</td>
-                  <td>${record.firstname} ${record.middlename || ""} ${record.lastname}</td>
-                  <td>${record.year}</td>
-                  <td>${new Date(record.checkInTime).toLocaleString("en-US")}</td>
-                  <td>${record.checkOutTime ? new Date(record.checkOutTime).toLocaleString("en-US") : "N/A"}</td>
-                </tr>
-              `
+                    <tr>
+                      <td>${eventTitle}</td>
+                      <td>${record.studentId}</td>
+                      <td>${record.firstname} ${record.middlename || ""} ${record.lastname}</td>
+                      <td>${record.year}</td>
+                      <td>${new Date(record.checkInTime).toLocaleString("en-US")}</td>
+                      <td>${record.checkOutTime ? new Date(record.checkOutTime).toLocaleString("en-US") : "N/A"}</td>
+                    </tr>
+                  `
                 )
                 .join("")}
             </tbody>
           </table>
         </body>
       </html>
-    `);
-
+    `;
+  
+    printWindow.document.open();
+    printWindow.document.write(printContent);
     printWindow.document.close();
-    printWindow.focus();
-    printWindow.print();
-    printWindow.close();
+  
+    printWindow.onload = () => {
+      printWindow.focus(); // Ensure the window is focused before printing
+      printWindow.print();
+      printWindow.close();
+    };
   };
+  
 
   // Function to handle PDF export
   const handleExportPDF = () => {
@@ -169,7 +175,7 @@ const AttendanceReport = () => {
         <div className="flex gap-4">
           {/* Student ID Search */}
           <div className="flex-1">
-            <label className="block mb-2 text-lg font-medium">Search Student ID</label>
+            <label className="block mb-2 text-lg font-medium">Search</label>
             <input
               type="text"
               value={searchId}
@@ -217,13 +223,13 @@ const AttendanceReport = () => {
         {/* Right Side: Buttons */}
         <div className="flex gap-2">
           {/* Print Button */}
-          <button
+          {/* <button
             onClick={handlePrint}
             className="px-2 py-1 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700 transition"
             disabled={!selectedEvent}
           >
             Print
-          </button>
+          </button> */}
 
           {/* Export PDF Button */}
           <button
