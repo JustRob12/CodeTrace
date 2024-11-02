@@ -80,21 +80,25 @@ const AttendanceScanner = () => {
 
   const handleCheckIn = async (studentId) => {
     try {
-      const response = await axios.post("http://localhost:5000/api/auth/attendance/checkin", {
-        studentId,
-        eventId: selectedEvent,
-      });
+        const response = await axios.post("http://localhost:5000/api/auth/attendance/checkin", {
+            studentId,
+            eventId: selectedEvent,
+        });
 
-      if (response.status === 201) {
-        fetchCheckInRecords();
-        toast.success("Check-in successful!");
-      } else {
-        toast.error("Student not found.");
-      }
+        if (response.status === 201) {
+            fetchCheckInRecords();
+            toast.success("Check-in successful!");
+        } else {
+            toast.error("Student not found.");
+        }
     } catch (error) {
-      toast.error("You are already Attendance in this event");
+        // Log the error to the terminal
+        console.error("Check-in error:", error);
+        // Show the user an error message
+        toast.error("You are already Attendance in this event");
     }
-  };
+};
+
 
   const handleCheckOut = async (studentId) => {
     try {

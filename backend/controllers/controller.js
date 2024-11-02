@@ -266,7 +266,10 @@ const updateStudent = (req, res) => {
     
         // Step 1: Validate if the student exists
         db.query('SELECT * FROM students WHERE studentId = ?', [studentId], (err, results) => {
-            if (err) return res.status(500).json({ message: 'Database error during student validation' });
+            if (err) {
+                console.error('Database error during student validation:', err); // Log error
+                return res.status(500).json({ message: 'Database error during student validation' });
+            }
     
             if (results.length === 0) {
                 return res.status(404).json({ message: 'Student not found. Please register first.' });
@@ -278,7 +281,10 @@ const updateStudent = (req, res) => {
     
             // Step 3: Check if the student has already checked in for the event
             db.query('SELECT * FROM attendance WHERE studentId = ? AND event_id = ?', [studentId, eventId], (err, attendance) => {
-                if (err) return res.status(500).json({ message: 'Database error during attendance check' });
+                if (err) {
+                    console.error('Database error during attendance check:', err); // Log error
+                    return res.status(500).json({ message: 'Database error during attendance check' });
+                }
     
                 if (attendance.length > 0) {
                     return res.status(400).json({ message: 'Student already checked in for this event.' });
@@ -289,14 +295,16 @@ const updateStudent = (req, res) => {
                     'INSERT INTO attendance (studentId, firstname, middlename, lastname, year, checkInTime, event_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
                     [studentId, firstname, middlename, lastname, year, checkInTime, eventId],
                     (err) => {
-                        if (err) return res.status(500).json({ message: 'Error saving attendance' });
+                        if (err) {
+                            console.error('Error saving attendance:', err); // Log error
+                            return res.status(500).json({ message: 'Error saving attendance' });
+                        }
                         res.status(201).json({ message: 'Check-in successful', checkInTime });
                     }
                 );
             });
         });
     };
-    
     
     
 
