@@ -15,7 +15,8 @@ const {
     viewAttendance,
     getAttendanceReports,
     getStudentCountsByYear,
-
+    loginStudent,
+    getStudentData
 } = require('../controllers/controller');
 
 const router = express.Router();
@@ -64,7 +65,7 @@ router.get('/reports', getAttendanceReports);
 
 router.get('/counts', getStudentCountsByYear);
 
-
-
+router.post('/login/student', loginStudent);
+router.get('/student/:studentId', getStudentData);
 
 module.exports = router;

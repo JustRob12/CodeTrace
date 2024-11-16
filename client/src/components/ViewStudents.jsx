@@ -125,6 +125,7 @@ const ViewStudents = () => {
                             <th className="px-4 py-2">First Name</th>
                             <th className="px-4 py-2">Last Name</th>
                             <th className="px-4 py-2">Year</th>
+                          
                         </tr>
                     </thead>
                     <tbody>
@@ -139,11 +140,14 @@ const ViewStudents = () => {
                                     <td className="px-4 py-2">{student.firstname}</td>
                                     <td className="px-4 py-2">{student.lastname}</td>
                                     <td className="px-4 py-2">{student.year}</td>
+                                    <td className="px-4 py-2">
+                                      
+                                    </td>
                                 </tr>
                             ))
                         ) : (
                             <tr>
-                                <td colSpan="4" className="text-center py-4">
+                                <td colSpan="5" className="text-center py-4">
                                     No students available.
                                 </td>
                             </tr>
@@ -167,6 +171,12 @@ const ViewStudents = () => {
                         <p><strong>Section:</strong> {selectedStudent.section}</p>
                         <p><strong>Contact Number:</strong> {selectedStudent.contactNumber}</p>
                         <p><strong>Gmail:</strong> {selectedStudent.gmail}</p>
+                        
+                        <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+                            <h3 className="text-lg font-semibold mb-2">Account Credentials</h3>
+                            <p><strong>Username:</strong> {selectedStudent.studentId}</p>
+                            <p><strong>Password:</strong> {selectedStudent.credentials?.password || 'Not set'}</p>
+                        </div>
 
                         <div className="mt-6 flex space-x-4">
                             <button

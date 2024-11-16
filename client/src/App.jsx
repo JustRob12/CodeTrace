@@ -11,6 +11,7 @@ import Register from './components/Register';
 import RegisterStudent from './components/RegisterStudent';
 import ViewStudents from './components/ViewStudents';
 import Semester from './components/Semester';
+import StudentDashboard from './components/StudentDashboard';
 import './tailwind.css';
 
 Modal.setAppElement('#root');
@@ -33,6 +34,7 @@ const App = () => {
                 <Route path="/attendance" element={<Layout><AttendanceScanner /></Layout>} />
                 <Route path="/attendance-report" element={<Layout><AttendanceReport /></Layout>} />
                 <Route path="/semester" element={<Layout><Semester /></Layout>} />
+                <Route path="/student-dashboard" element={<StudentDashboard />} />
             </Routes>
         </Router>
     );

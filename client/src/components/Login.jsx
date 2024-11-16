@@ -19,14 +19,28 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
+      // Try admin login first
       const response = await axios.post(
         "http://localhost:5000/api/auth/login",
         { username, password }
       );
       localStorage.setItem("token", response.data.token);
+      localStorage.setItem("userType", "admin");
       navigate("/dashboard");
-    } catch (error) {
-      alert("Login failed");
+    } catch (adminError) {
+      try {
+        // If admin login fails, try student login
+        const studentResponse = await axios.post(
+          "http://localhost:5000/api/auth/login/student",
+          { username, password }
+        );
+        localStorage.setItem("token", studentResponse.data.token);
+        localStorage.setItem("userType", "student");
+        localStorage.setItem("studentId", studentResponse.data.studentId);
+        navigate("/student-dashboard");
+      } catch (studentError) {
+        alert("Login failed");
+      }
     }
   };
 
