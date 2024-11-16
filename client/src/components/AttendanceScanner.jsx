@@ -10,6 +10,7 @@ const AttendanceScanner = () => {
   const lastScannedId = useRef("");
   const cooldownRef = useRef(false);
   const [scanStatus, setScanStatus] = useState("");
+  const [scannerActive, setScannerActive] = useState(true); // New state to control scanner activation
 
   const swapFirstAndLast = (arr) => {
     if (arr.length < 2) return arr;
@@ -80,25 +81,22 @@ const AttendanceScanner = () => {
 
   const handleCheckIn = async (studentId) => {
     try {
-        const response = await axios.post("http://localhost:5000/api/auth/attendance/checkin", {
-            studentId,
-            eventId: selectedEvent,
-        });
+      const response = await axios.post("http://localhost:5000/api/auth/attendance/checkin", {
+        studentId,
+        eventId: selectedEvent,
+      });
 
-        if (response.status === 201) {
-            fetchCheckInRecords();
-            toast.success("Check-in successful!");
-        } else {
-            toast.error("Student not found.");
-        }
+      if (response.status === 201) {
+        fetchCheckInRecords();
+        toast.success("Check-in successful!");
+      } else {
+        toast.error("Student not found.");
+      }
     } catch (error) {
-        // Log the error to the terminal
-        console.error("Check-in error:", error);
-        // Show the user an error message
-        toast.error("You are already Attendance in this event");
+      console.error("Check-in error:", error);
+      toast.error("You are already Attendance in this event");
     }
-};
-
+  };
 
   const handleCheckOut = async (studentId) => {
     try {
@@ -116,6 +114,11 @@ const AttendanceScanner = () => {
     } catch (error) {
       toast.error("You are already Attendance in this event");
     }
+  };
+
+  const handleCloseScanner = () => {
+    setScannerActive(false);  // Stop the scanner
+    setTimeout(() => window.location.reload(), 1000); // Refresh the page after a short delay
   };
 
   return (
@@ -144,7 +147,7 @@ const AttendanceScanner = () => {
           </select>
         </div>
 
-        {selectedEvent && (
+        {selectedEvent && scannerActive && (
           <div className="w-full">
             <QrReader
               onResult={(result, error) => {
@@ -159,12 +162,20 @@ const AttendanceScanner = () => {
         {scanStatus && (
           <div
             className={`mt-4 p-2 rounded-md text-white ${
-              scanStatus === "Scan Success!" ? "bg-green-500" : "bg-blue-500"
+              scanStatus === "Success!" ? "bg-green-500" : "bg-blue-500"
             }`}
           >
             {scanStatus}
           </div>
         )}
+
+        {/* Close Scanner Button */}
+        <button
+          onClick={handleCloseScanner}
+          className="mt-4 p-2 bg-red-500 text-white rounded-md"
+        >
+          Close Scanner
+        </button>
       </div>
 
       {/* Right Side: Check-in Records */}

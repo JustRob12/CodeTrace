@@ -62,6 +62,11 @@ const Sidebar = ({ isExpanded, toggleSidebar }) => {
               label: "Attendance Report",
               icon: FaFileAlt,
             },
+            {
+              to: "/semester",
+              label: "Semester",
+              icon: FaCalendarAlt,
+            },
           ].map((item) => (
             <li key={item.to} className="mb-4">
               <Link

@@ -17,9 +17,13 @@ const Dashboard = () => {
   });
 
   const [totalStudents, setTotalStudents] = useState(0); // For total count animation
+  const [events, setEvents] = useState([]); // State for events
+
+  const activeYear = localStorage.getItem('activeYear');
 
   useEffect(() => {
     fetchStudentCounts();
+    fetchEvents(); // Fetch events on component mount
   }, []);
 
   const fetchStudentCounts = async () => {
@@ -51,6 +55,16 @@ const Dashboard = () => {
     }
   };
 
+  // New function to fetch events
+  const fetchEvents = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/api/auth/events"); // Adjust this URL as needed
+      setEvents(response.data);
+    } catch (error) {
+      console.error("Error fetching events:", error);
+    }
+  };
+
   const data = {
     labels: ["1st Year", "2nd Year", "3rd Year", "4th Year"],
     datasets: [
@@ -62,8 +76,8 @@ const Dashboard = () => {
           studentCounts.thirdYear,
           studentCounts.fourthYear,
         ],
-        backgroundColor: ["#3498db", "#2ecc71", "#f1c40f", "#e74c3c"],
-        borderColor: ["#2980b9", "#27ae60", "#f39c12", "#c0392b"],
+        backgroundColor: ["#18e1e7", "#15b8bc", "#129fa0", "#0f8686"], // Shades of teal
+        borderColor: ["#0f8686", "#0c7575", "#0a6464", "#084c4c"],
         borderWidth: 1,
       },
     ],
@@ -86,22 +100,38 @@ const Dashboard = () => {
     },
   };
 
+  // Group events by academic year
+  const groupedEvents = events.reduce((acc, event) => {
+    const startYear = new Date(event.start).getFullYear();
+    const academicYear = `${startYear}-${startYear + 1}`;
+    if (!acc[academicYear]) {
+      acc[academicYear] = [];
+    }
+    acc[academicYear].push(event);
+    return acc;
+  }, {});
+
+  // Sort academic years in descending order
+  const sortedAcademicYears = Object.keys(groupedEvents).sort((a, b) => {
+    const yearA = parseInt(a.split('-')[0], 10);
+    const yearB = parseInt(b.split('-')[0], 10);
+    return yearB - yearA;
+  });
+
   return (
-    <div className="flex min-h-screen">
-      <div className="flex-1 p-8 bg-white">
-        <h1 className="text-3xl font-bold mb-6">Welcome to the Dashboard</h1>
-        <p className="text-gray-600 mb-6">
-       
-        </p>
+    <div className="flex min-h-screen bg-gray-100">
+      <div className="flex-1 p-8 bg-white shadow-md rounded-lg">
+        <h1 className="text-4xl font-bold mb-6 text-black">Welcome to the Dashboard</h1>
+        <p className="text-gray-600 mb-6">Manage student data and events efficiently.</p>
 
         <div className="flex gap-8 mt-6">
           {/* Left Section: Total Students Count */}
           <div className="w-1/4">
-            <div className="bg-gray-200 p-6 rounded-lg shadow-md">
-              <h2 className="text-xl font-semibold text-center mb-2">
+            <div className="bg-[#18e1e7] p-6 rounded-lg shadow-md">
+              <h2 className="text-xl font-semibold text-center mb-2 text-black">
                 Total Students
               </h2>
-              <p className="text-4xl font-bold text-center text-gray-800">
+              <p className="text-5xl font-bold text-center text-black">
                 <CountUp
                   start={0}
                   end={totalStudents}
@@ -116,70 +146,77 @@ const Dashboard = () => {
           <div className="flex-1 flex gap-8">
             {/* Student Count Boxes */}
             <div className="grid grid-cols-2 gap-4 flex-1">
-              <div className="bg-blue-500 text-white p-4 rounded-lg shadow-lg flex items-center">
-                <i className="fas fa-user-graduate text-4xl mr-4"></i>
-                <div>
-                  <h2 className="text-sm">1st Year Students</h2>
-                  <p className="text-3xl font-bold">
-                    <CountUp
-                      start={0}
-                      end={studentCounts.firstYear}
-                      duration={1.5}
-                    />
-                  </p>
-                </div>
-              </div>
-              <div className="bg-green-500 text-white p-4 rounded-lg shadow-lg flex items-center">
-                <i className="fas fa-user-graduate text-4xl mr-4"></i>
-                <div>
-                  <h2 className="text-sm">2nd Year Students</h2>
-                  <p className="text-3xl font-bold">
-                    <CountUp
-                      start={0}
-                      end={studentCounts.secondYear}
-                      duration={1.5}
-                    />
-                  </p>
-                </div>
-              </div>
-              <div className="bg-yellow-500 text-white p-4 rounded-lg shadow-lg flex items-center">
-                <i className="fas fa-user-graduate text-4xl mr-4"></i>
-                <div>
-                  <h2 className="text-sm">3rd Year Students</h2>
-                  <p className="text-3xl font-bold">
-                    <CountUp
-                      start={0}
-                      end={studentCounts.thirdYear}
-                      duration={1.5}
-                    />
-                  </p>
-                </div>
-              </div>
-              <div className="bg-red-500 text-white p-4 rounded-lg shadow-lg flex items-center">
-                <i className="fas fa-user-graduate text-4xl mr-4"></i>
-                <div>
-                  <h2 className="text-sm">4th Year Students</h2>
-                  <p className="text-3xl font-bold">
-                    <CountUp
-                      start={0}
-                      end={studentCounts.fourthYear}
-                      duration={1.5}
-                    />
-                  </p>
-                </div>
-              </div>
+              {Object.entries(studentCounts).map(([key, value], index) => {
+                const colors = [
+                  "bg-[#18e1e7]",
+                  "bg-[#15b8bc]",
+                  "bg-[#129fa0]",
+                  "bg-[#0f8686]",
+                ];
+                return (
+                  <div key={key} className={`${colors[index]} text-white p-4 rounded-lg shadow-lg flex items-center`}>
+                    <i className="fas fa-user-graduate text-4xl mr-4"></i>
+                    <div>
+                      <h2 className="text-sm capitalize">{`${key.charAt(0).toUpperCase() + key.slice(1)} Students`}</h2>
+                      <p className="text-3xl font-bold">
+                        <CountUp
+                          start={0}
+                          end={value}
+                          duration={1.5}
+                        />
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
 
-            {/* Smaller Pie Chart */}
+            {/* Pie Chart */}
             <div className="flex justify-center items-center">
               <div style={{ width: "250px", height: "250px" }}>
-                <h2 className="text-xl font-semibold mb-4 text-center">
+                <h2 className="text-xl font-semibold mb-4 text-center text-black">
                   Student Distribution by Year
                 </h2>
                 <Pie data={data} options={options} />
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Events Section */}
+        <div className="mt-8">
+          <h2 className="text-3xl font-bold mb-6 text-black text-center">
+            {activeYear ? `${activeYear} Events` : 'No Active Semester Selected'}
+          </h2>
+
+          {activeYear && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {groupedEvents[activeYear]?.map((event) => (
+                <div
+                  key={event.id}
+                  className="bg-white p-6 rounded-lg shadow-lg flex flex-col items-start transition-transform transform hover:scale-105 cursor-pointer"
+                >
+                  <h3 className="font-bold text-xl text-[#0f8686] mb-2">{event.title}</h3>
+                  <div className="text-sm mb-3 text-gray-700">
+                    <div className="flex items-center mb-1">
+                      <span className="font-semibold mr-2">Start:</span>
+                      <div className="flex flex-col">
+                        <span className="text-lg font-medium">{new Date(event.start).toLocaleDateString()}</span>
+                        <span className="text-xs text-gray-500">{new Date(event.start).toLocaleTimeString()}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center">
+                      <span className="font-semibold mr-2">End:</span>
+                      <div className="flex flex-col">
+                        <span className="text-lg font-medium">{new Date(event.end).toLocaleDateString()}</span>
+                        <span className="text-xs text-gray-500">{new Date(event.end).toLocaleTimeString()}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

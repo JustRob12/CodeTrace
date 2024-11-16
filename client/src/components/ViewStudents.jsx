@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { toPng } from 'html-to-image';
 import React, { useEffect, useState } from 'react';
-import { FaEdit, FaQrcode, FaTrashAlt } from 'react-icons/fa';
+import { FaEdit, FaQrcode, FaTrashAlt, FaUserCircle } from 'react-icons/fa';
 import QRCode from 'react-qr-code';
 import EditStudentModal from './EditStudentModal';
 
@@ -97,20 +97,20 @@ const ViewStudents = () => {
     });
 
     return (
-        <div className="flex">
-            <div className="w-2/3 p-4">
-                <h2 className="text-2xl font-bold mb-4">Students List</h2>
+        <div className="flex space-x-6 animate-fadeIn">
+            <div className="w-2/3 p-6 bg-white rounded shadow-lg">
+                <h2 className="text-3xl font-bold mb-6">Students List</h2>
                 <input
                     type="text"
                     placeholder="Search by name..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="border p-2 mb-4 w-full"
+                    className="border border-gray-300 rounded-md p-2 mb-4 w-full focus:border-blue-500"
                 />
                 <select
                     value={selectedYear}
                     onChange={(e) => setSelectedYear(e.target.value)}
-                    className="border p-2 mb-4"
+                    className="border border-gray-300 rounded-md p-2 mb-4 w-full"
                 >
                     <option value="">All Years</option>
                     {years.map(year => (
@@ -132,7 +132,7 @@ const ViewStudents = () => {
                             filteredStudents.map((student) => (
                                 <tr
                                     key={student.studentId}
-                                    className="bg-white border-b cursor-pointer"
+                                    className="bg-white border-b hover:bg-blue-100 cursor-pointer transition"
                                     onClick={() => setSelectedStudent(student)}
                                 >
                                     <td className="px-4 py-2">{student.studentId}</td>
@@ -152,10 +152,13 @@ const ViewStudents = () => {
                 </table>
             </div>
 
-            <div className="w-1/3 p-4 border-l border-gray-300">
+            <div className="w-1/3 p-6 bg-white rounded shadow-lg border-l border-gray-200 animate-fadeIn">
                 {selectedStudent ? (
                     <div>
-                        <h2 className="text-xl font-bold mb-2">Student Details</h2>
+                        <h2 className="text-2xl font-bold mb-4 flex items-center space-x-2">
+                            <FaUserCircle className="text-blue-500" />
+                            <span>Student Details</span>
+                        </h2>
                         <p><strong>Student ID:</strong> {selectedStudent.studentId}</p>
                         <p><strong>First Name:</strong> {selectedStudent.firstname}</p>
                         <p><strong>Last Name:</strong> {selectedStudent.lastname}</p>
@@ -165,22 +168,22 @@ const ViewStudents = () => {
                         <p><strong>Contact Number:</strong> {selectedStudent.contactNumber}</p>
                         <p><strong>Gmail:</strong> {selectedStudent.gmail}</p>
 
-                        <div className="mt-4 flex space-x-2">
+                        <div className="mt-6 flex space-x-4">
                             <button
                                 onClick={() => handleEdit(selectedStudent)}
-                                className="bg-[#18e2e9] p-2 rounded-full hover:bg-[#0b6c70] transition-colors"
+                                className="bg-teal-500 p-3 rounded-full hover:bg-teal-600 transition-transform transform hover:scale-110"
                             >
                                 <FaEdit className="text-white" />
                             </button>
                             <button
                                 onClick={() => handleDelete(selectedStudent.studentId)}
-                                className="bg-red-500 p-2 rounded-full hover:bg-red-600 transition-colors"
+                                className="bg-red-500 p-3 rounded-full hover:bg-red-600 transition-transform transform hover:scale-110"
                             >
                                 <FaTrashAlt className="text-white" />
                             </button>
                             <button
                                 onClick={handleGenerateQrCode}
-                                className="bg-[#18e2e9] p-2 rounded-full hover:bg-[#0b6c70] transition-colors"
+                                className="bg-teal-500 p-3 rounded-full hover:bg-teal-600 transition-transform transform hover:scale-110"
                             >
                                 <FaQrcode className="text-white" />
                             </button>
@@ -192,9 +195,9 @@ const ViewStudents = () => {
             </div>
 
             {isQRCodeVisible && (
-                <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
-                    <div className="bg-white p-4 rounded shadow-lg">
-                        <h2 className="text-xl font-bold mb-2">QR Code</h2>
+                <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50 animate-fadeIn">
+                    <div className="bg-white p-6 rounded shadow-lg">
+                        <h2 className="text-2xl font-bold mb-4 text-center">QR Code</h2>
                         <div
                             id="qr-code-container"
                             className="flex flex-col items-center mb-4"
@@ -212,13 +215,13 @@ const ViewStudents = () => {
                         </div>
                         <button
                             onClick={downloadQRCodeWithDetails}
-                            className="bg-blue-500 text-white px-4 py-2 rounded"
+                            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
                         >
                             Download QR Code
                         </button>
                         <button
                             onClick={() => setIsQRCodeVisible(false)}
-                            className="mt-2 text-red-500"
+                            className="mt-4 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
                         >
                             Close
                         </button>
@@ -228,9 +231,8 @@ const ViewStudents = () => {
 
             {isModalOpen && (
                 <EditStudentModal
-                    isOpen={isModalOpen}
-                    onClose={() => setIsModalOpen(false)}
                     student={selectedStudent}
+                    onClose={() => setIsModalOpen(false)}
                     onSave={handleSave}
                 />
             )}
