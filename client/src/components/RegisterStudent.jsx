@@ -2,7 +2,7 @@ import axios from "axios";
 import React, { useState } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { FaUser, FaIdCard, FaGraduationCap, FaPhone, FaEnvelope } from "react-icons/fa";
+import { FaUser, FaIdCard, FaGraduationCap, FaPhone, FaEnvelope, FaUserPlus } from "react-icons/fa";
 import ViewStudents from "./ViewStudents";
 
 const RegisterStudent = () => {
@@ -67,127 +67,190 @@ const RegisterStudent = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen items-center justify-center bg-gray-200">
-      <div className="w-full max-w-4xl p-8 bg-white shadow-lg rounded-lg">
-        <h2 className="text-3xl font-bold text-black mb-6">
-          Register Student
-        </h2>
-        {errorMessage && (
-          <div className="text-red-600 mb-4 text-center">{errorMessage}</div>
-        )}
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          <div className="relative">
-            <FaUser className="absolute top-3 left-3 text-gray-500" />
-            <input
-              type="text"
-              name="lastname"
-              placeholder="Last Name"
-              value={formData.lastname}
-              onChange={handleChange}
-              required
-              className="pl-10 w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring focus:ring-[#18e1e7] focus:border-[#18e1e7]"
-            />
+    <div className="min-h-screen bg-white p-6">
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Registration Form Section */}
+        <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">
+          <div className="relative bg-gradient-to-r from-[#064444] to-[#0f8686] pt-8 pb-16">
+            <div className="relative z-10 px-6 text-center">
+              <FaUserPlus className="mx-auto text-white/90 text-4xl mb-2" />
+              <h2 className="text-2xl font-bold text-white mb-1">
+                Register New Student
+              </h2>
+              <p className="text-white/80 text-sm">
+                Enter student information below
+              </p>
+            </div>
+            <div className="absolute bottom-0 left-0 right-0">
+              <svg viewBox="0 0 1440 120" className="w-full h-[60px] fill-white">
+                <path d="M0,64L80,69.3C160,75,320,85,480,80C640,75,800,53,960,48C1120,43,1280,53,1360,58.7L1440,64L1440,120L1360,120C1280,120,1120,120,960,120C800,120,640,120,480,120C320,120,160,120,80,120L0,120Z"></path>
+              </svg>
+            </div>
           </div>
-          <div className="relative">
-            <FaUser className="absolute top-3 left-3 text-gray-500" />
-            <input
-              type="text"
-              name="firstname"
-              placeholder="First Name"
-              value={formData.firstname}
-              onChange={handleChange}
-              required
-              className="pl-10 w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring focus:ring-[#18e1e7] focus:border-[#18e1e7]"
-            />
+
+          <div className="p-6">
+            <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              {/* Name Fields */}
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      name="lastname"
+                      value={formData.lastname}
+                      onChange={handleChange}
+                      required
+                      className="pl-10 w-full p-3 border border-gray-300 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#0f8686] focus:border-transparent transition duration-200"
+                      placeholder="Enter last name"
+                    />
+                    <FaUser className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">First Name</label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      name="firstname"
+                      value={formData.firstname}
+                      onChange={handleChange}
+                      required
+                      className="pl-10 w-full p-3 border border-gray-300 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#0f8686] focus:border-transparent transition duration-200"
+                      placeholder="Enter first name"
+                    />
+                    <FaUser className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Middle Name</label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      name="middlename"
+                      value={formData.middlename}
+                      onChange={handleChange}
+                      className="pl-10 w-full p-3 border border-gray-300 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#0f8686] focus:border-transparent transition duration-200"
+                      placeholder="Enter middle name (optional)"
+                    />
+                    <FaUser className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Student Details */}
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Student ID</label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      name="studentId"
+                      value={formData.studentId}
+                      onChange={handleChange}
+                      required
+                      maxLength={9}
+                      className="pl-10 w-full p-3 border border-gray-300 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#0f8686] focus:border-transparent transition duration-200"
+                      placeholder="Enter student ID"
+                    />
+                    <FaIdCard className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Year Level</label>
+                  <div className="relative">
+                    <select
+                      name="year"
+                      value={formData.year}
+                      onChange={handleChange}
+                      required
+                      className="pl-10 w-full p-3 border border-gray-300 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#0f8686] focus:border-transparent transition duration-200 appearance-none"
+                    >
+                      <option value="" disabled>Select Year Level</option>
+                      <option value="1">1st Year</option>
+                      <option value="2">2nd Year</option>
+                      <option value="3">3rd Year</option>
+                      <option value="4">4th Year</option>
+                    </select>
+                    <FaGraduationCap className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Section</label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      name="section"
+                      value={formData.section}
+                      onChange={handleChange}
+                      required
+                      className="pl-10 w-full p-3 border border-gray-300 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#0f8686] focus:border-transparent transition duration-200"
+                      placeholder="Enter section"
+                    />
+                    <FaGraduationCap className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Contact Information */}
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Contact Number</label>
+                  <div className="relative">
+                    <input
+                      type="tel"
+                      name="contactNumber"
+                      value={formData.contactNumber}
+                      onChange={handleChange}
+                      required
+                      maxLength={11}
+                      className="pl-10 w-full p-3 border border-gray-300 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#0f8686] focus:border-transparent transition duration-200"
+                      placeholder="Enter contact number"
+                    />
+                    <FaPhone className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                  <div className="relative">
+                    <input
+                      type="email"
+                      name="gmail"
+                      value={formData.gmail}
+                      onChange={handleChange}
+                      required
+                      className="pl-10 w-full p-3 border border-gray-300 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#0f8686] focus:border-transparent transition duration-200"
+                      placeholder="Enter email address"
+                    />
+                    <FaEnvelope className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Submit Button */}
+              <div className="col-span-1 sm:col-span-2">
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full bg-gradient-to-r from-[#064444] to-[#0f8686] text-white py-3 rounded-xl font-medium hover:opacity-90 transition duration-200 flex items-center justify-center space-x-2"
+                >
+                  <FaUserPlus className="text-lg" />
+                  <span>{isSubmitting ? "Registering..." : "Register Student"}</span>
+                </button>
+              </div>
+            </form>
           </div>
-          <div className="relative">
-            <FaUser className="absolute top-3 left-3 text-gray-500" />
-            <input
-              type="text"
-              name="middlename"
-              placeholder="Middle Name (Optional)"
-              value={formData.middlename}
-              onChange={handleChange}
-              className="pl-10 w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring focus:ring-[#18e1e7] focus:border-[#18e1e7]"
-            />
-          </div>
-          <div className="relative">
-            <FaIdCard className="absolute top-3 left-3 text-gray-500" />
-            <input
-              type="text"
-              name="studentId"
-              placeholder="Student ID"
-              value={formData.studentId}
-              onChange={handleChange}
-              maxLength={9}
-              required
-              className="pl-10 w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring focus:ring-[#18e1e7] focus:border-[#18e1e7]"
-            />
-          </div>
-          <div className="relative">
-            <FaGraduationCap className="absolute top-3 left-3 text-gray-500" />
-            <select
-              name="year"
-              value={formData.year}
-              onChange={handleChange}
-              required
-              className="pl-10 w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring focus:ring-[#18e1e7] focus:border-[#18e1e7]"
-            >
-              <option value="" disabled>Select Year</option>
-              <option value="1">1</option>
-              <option value="2">2</option>
-              <option value="3">3</option>
-              <option value="4">4</option>
-            </select>
-          </div>
-          <div className="relative">
-            <FaGraduationCap className="absolute top-3 left-3 text-gray-500" />
-            <input
-              type="text"
-              name="section"
-              placeholder="Section"
-              value={formData.section}
-              onChange={handleChange}
-              required
-              className="pl-10 w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring focus:ring-[#18e1e7] focus:border-[#18e1e7]"
-            />
-          </div>
-          <div className="relative">
-            <FaPhone className="absolute top-3 left-3 text-gray-500" />
-            <input
-              type="tel"
-              name="contactNumber"
-              placeholder="Contact Number"
-              value={formData.contactNumber}
-              onChange={handleChange}
-              maxLength={11}
-              required
-              className="pl-10 w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring focus:ring-[#18e1e7] focus:border-[#18e1e7]"
-            />
-          </div>
-          <div className="relative">
-            <FaEnvelope className="absolute top-3 left-3 text-gray-500" />
-            <input
-              type="email"
-              name="gmail"
-              placeholder="Gmail"
-              value={formData.gmail}
-              onChange={handleChange}
-              required
-              className="pl-10 w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring focus:ring-[#18e1e7] focus:border-[#18e1e7]"
-            />
-          </div>
-          <button
-            type="submit"
-            className="col-span-2 bg-[#18e1e7] text-white p-3 rounded hover:bg-[#00b3b8] transition disabled:bg-gray-400"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? "Registering..." : "Register Student"}
-          </button>
-        </form>
+        </div>
+
+        {/* View Students Section */}
         <ViewStudents />
       </div>
-      <ToastContainer />
+      <ToastContainer position="top-right" />
     </div>
   );
 };

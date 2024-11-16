@@ -1,25 +1,54 @@
 .overlay {
-  position: fixed; /* Use fixed positioning */
-  top: 0; /* Cover the full height */
-  left: 0; /* Cover the full width */
-  right: 0; /* Cover the full width */
-  bottom: 0; /* Cover the full height */
-  background: rgba(0, 0, 0, 0.7); /* Semi-transparent background */
-  display: flex; /* Flexbox for centering */
-  justify-content: center; /* Center horizontally */
-  align-items: center; /* Center vertically */
-  z-index: 999; /* Ensure it sits above other content */
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
 }
 
 .modal {
-  max-width: 600px;
-  margin: auto;
-  padding: 20px;
-  border-radius: 8px;
+  outline: none;
+  width: 100%;
+  max-width: 32rem;
+}
+
+/* FullCalendar customization */
+.fc {
   background: white;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  position: relative; /* Ensure positioning is relative to the overlay */
-  z-index: 1000; /* Higher than overlay for visibility */
+  padding: 1rem;
+  border-radius: 1rem;
+}
+
+.fc-button-primary {
+  background-color: #0f8686 !important;
+  border-color: #0f8686 !important;
+}
+
+.fc-button-primary:hover {
+  background-color: #0a6565 !important;
+  border-color: #0a6565 !important;
+}
+
+.fc-event {
+  background-color: #0f8686 !important;
+  border-color: #0f8686 !important;
+  padding: 0.25rem;
+  border-radius: 0.5rem;
+}
+
+.fc-day-today {
+  background-color: rgba(15, 134, 134, 0.1) !important;
+}
+
+.fc th {
+  padding: 0.75rem 0 !important;
+  font-weight: 600 !important;
 }
 
 .modal-content {

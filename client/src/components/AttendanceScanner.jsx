@@ -2,6 +2,7 @@ import axios from "axios";
 import React, { useEffect, useRef, useState } from "react";
 import { toast, Toaster } from "react-hot-toast";
 import { QrReader } from "react-qr-reader";
+import { FaQrcode, FaUserCheck, FaHistory } from 'react-icons/fa';
 
 const AttendanceScanner = () => {
   const [events, setEvents] = useState([]);
@@ -10,7 +11,7 @@ const AttendanceScanner = () => {
   const lastScannedId = useRef("");
   const cooldownRef = useRef(false);
   const [scanStatus, setScanStatus] = useState("");
-  const [scannerActive, setScannerActive] = useState(true); // New state to control scanner activation
+  const [scannerActive, setScannerActive] = useState(true);
 
   const swapFirstAndLast = (arr) => {
     if (arr.length < 2) return arr;
@@ -122,104 +123,171 @@ const AttendanceScanner = () => {
   };
 
   return (
-    <div className="flex flex-row gap-6 p-6">
-      <Toaster position="top-right" reverseOrder={false} />
+    <div className="min-h-screen bg-white p-6">
+      <div className="max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Scanner Section */}
+          <div className="lg:col-span-1">
+            <div className="bg-white/90 backdrop-blur-lg rounded-3xl shadow-2xl overflow-hidden">
+              <div className="relative bg-[#0f8686] pt-8 pb-16">
+                <div className="relative z-10 text-center px-6">
+                  <FaQrcode className="mx-auto text-white/90 text-4xl mb-2" />
+                  <h2 className="text-2xl font-bold text-white mb-1">
+                    Attendance Scanner
+                  </h2>
+                  <p className="text-white/80 text-sm">
+                    Scan QR codes for attendance
+                  </p>
+                </div>
+                <div className="absolute bottom-0 left-0 right-0">
+                  <svg viewBox="0 0 1440 120" className="w-full h-[60px] fill-white/90">
+                    <path d="M0,64L80,69.3C160,75,320,85,480,80C640,75,800,53,960,48C1120,43,1280,53,1360,58.7L1440,64L1440,120L1360,120C1280,120,1120,120,960,120C800,120,640,120,480,120C320,120,160,120,80,120L0,120Z"></path>
+                  </svg>
+                </div>
+              </div>
 
-      {/* Left Side: Scanner */}
-      <div className="w-1/3 flex flex-col items-center">
-        <h2 className="text-2xl font-bold mb-4">Attendance Scanner</h2>
+              <div className="p-6">
+                <div className="space-y-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Select Event
+                    </label>
+                    <select
+                      value={selectedEvent}
+                      onChange={handleEventChange}
+                      className="w-full px-4 py-2.5 border border-gray-300 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#0f8686] focus:border-transparent transition duration-200"
+                    >
+                      <option value="" disabled>
+                        -- Select an Event --
+                      </option>
+                      {events.map((event) => (
+                        <option key={event.id} value={event.id}>
+                          {event.title}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
 
-        <div className="w-full max-w-sm mb-4">
-          <label className="block mb-2 text-lg font-medium">Select Event</label>
-          <select
-            value={selectedEvent}
-            onChange={handleEventChange}
-            className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-          >
-            <option value="" disabled>
-              -- Select an Event --
-            </option>
-            {events.map((event) => (
-              <option key={event.id} value={event.id}>
-                {event.title}
-              </option>
-            ))}
-          </select>
-        </div>
+                  {selectedEvent && scannerActive && (
+                    <div className="rounded-xl overflow-hidden shadow-lg">
+                      <QrReader
+                        onResult={(result, error) => {
+                          if (result) handleScan(result);
+                          if (error?.name !== "NotFoundError") console.error(error);
+                        }}
+                        className="w-full"
+                        constraints={{ facingMode: "environment" }}
+                      />
+                    </div>
+                  )}
 
-        {selectedEvent && scannerActive && (
-          <div className="w-full">
-            <QrReader
-              onResult={(result, error) => {
-                if (result) handleScan(result);
-                if (error?.name !== "NotFoundError") console.error(error);
-              }}
-              style={{ width: "100%" }}
-            />
+                  {scanStatus && (
+                    <div
+                      className={`p-3 rounded-xl text-white text-center font-medium ${
+                        scanStatus === "Success!" ? "bg-green-500" : "bg-[#0f8686]"
+                      }`}
+                    >
+                      {scanStatus}
+                    </div>
+                  )}
+
+                  <button
+                    onClick={handleCloseScanner}
+                    className="w-full bg-red-500 text-white py-2.5 rounded-xl font-medium hover:bg-red-600 transition duration-200 flex items-center justify-center space-x-2"
+                  >
+                    <FaUserCheck className="text-lg" />
+                    <span>Close Scanner</span>
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
-        )}
 
-        {scanStatus && (
-          <div
-            className={`mt-4 p-2 rounded-md text-white ${
-              scanStatus === "Success!" ? "bg-green-500" : "bg-blue-500"
-            }`}
-          >
-            {scanStatus}
+          {/* Check-in Records Section */}
+          <div className="lg:col-span-2">
+            <div className="bg-white/90 backdrop-blur-lg rounded-3xl shadow-2xl overflow-hidden">
+              <div className="relative bg-[#0f8686] pt-8 pb-16">
+                <div className="relative z-10 text-center px-6">
+                  <FaHistory className="mx-auto text-white/90 text-4xl mb-2" />
+                  <h2 className="text-2xl font-bold text-white mb-1">
+                    Check-in Records
+                  </h2>
+                  <p className="text-white/80 text-sm">
+                    View attendance history
+                  </p>
+                </div>
+                <div className="absolute bottom-0 left-0 right-0">
+                  <svg viewBox="0 0 1440 120" className="w-full h-[60px] fill-white/90">
+                    <path d="M0,64L80,69.3C160,75,320,85,480,80C640,75,800,53,960,48C1120,43,1280,53,1360,58.7L1440,64L1440,120L1360,120C1280,120,1120,120,960,120C800,120,640,120,480,120C320,120,160,120,80,120L0,120Z"></path>
+                  </svg>
+                </div>
+              </div>
+
+              <div className="p-6">
+                <div className="overflow-x-auto">
+                  <div className="inline-block min-w-full align-middle">
+                    <div className="overflow-hidden rounded-xl shadow-lg">
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Student ID
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Name
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Year
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Check-in
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Check-out
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {checkInRecords.length === 0 ? (
+                            <tr>
+                              <td colSpan="5" className="px-6 py-4 text-center text-gray-500">
+                                No check-in records available.
+                              </td>
+                            </tr>
+                          ) : (
+                            checkInRecords.map((record, index) => (
+                              <tr key={index} className="hover:bg-gray-50">
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                  {record.studentId}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                  {`${record.firstName} ${record.middleName || ''} ${record.lastName}`}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                  {record.year}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                  {new Date(record.checkInTime).toLocaleString()}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                  {record.checkOutTime
+                                    ? new Date(record.checkOutTime).toLocaleString()
+                                    : "N/A"}
+                                </td>
+                              </tr>
+                            ))
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-        )}
-
-        {/* Close Scanner Button */}
-        <button
-          onClick={handleCloseScanner}
-          className="mt-4 p-2 bg-red-500 text-white rounded-md"
-        >
-          Close Scanner
-        </button>
-      </div>
-
-      {/* Right Side: Check-in Records */}
-      <div className="w-2/3">
-        <h3 className="text-lg font-semibold mb-2">Check-in Records</h3>
-        <div className="border border-gray-300 rounded-md p-4 h-96 overflow-y-auto">
-          {checkInRecords.length === 0 ? (
-            <p>No check-in records available.</p>
-          ) : (
-            <table className="w-full text-left">
-              <thead>
-                <tr>
-                  <th className="border-b p-2">Student ID</th>
-                  <th className="border-b p-2">First Name</th>
-                  <th className="border-b p-2">Middle Name</th>
-                  <th className="border-b p-2">Last Name</th>
-                  <th className="border-b p-2">Year</th>
-                  <th className="border-b p-2">Check-in</th>
-                  <th className="border-b p-2">Check-out</th>
-                </tr>
-              </thead>
-              <tbody>
-                {checkInRecords.map((record, index) => (
-                  <tr key={index}>
-                    <td className="border-b p-2">{record.studentId}</td>
-                    <td className="border-b p-2">{record.firstName}</td>
-                    <td className="border-b p-2">{record.middleName || "N/A"}</td>
-                    <td className="border-b p-2">{record.lastName}</td>
-                    <td className="border-b p-2">{record.year}</td>
-                    <td className="border-b p-2">
-                      {new Date(record.checkInTime).toLocaleString("en-US")}
-                    </td>
-                    <td className="border-b p-2">
-                      {record.checkOutTime
-                        ? new Date(record.checkOutTime).toLocaleString("en-US")
-                        : "N/A"}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
         </div>
       </div>
+      <Toaster position="top-right" />
     </div>
   );
 };

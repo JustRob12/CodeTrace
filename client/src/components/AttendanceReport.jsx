@@ -1,8 +1,9 @@
 import axios from "axios";
-import jsPDF from "jspdf"; // Import jsPDF
-import "jspdf-autotable"; // Import the autoTable plugin
+import jsPDF from "jspdf";
+import "jspdf-autotable";
 import React, { useEffect, useState } from "react";
 import { toast, Toaster } from "react-hot-toast";
+import { FaFileDownload, FaSearch, FaCalendarAlt, FaUserGraduate, FaFilter } from 'react-icons/fa';
 
 const AttendanceReport = () => {
   const [attendanceRecords, setAttendanceRecords] = useState([]);
@@ -165,116 +166,204 @@ const AttendanceReport = () => {
   };
 
   return (
-    <div className="flex flex-col items-center p-6">
-      <Toaster position="top-right" reverseOrder={false} />
-      <h2 className="text-2xl font-bold mb-4">Attendance Report</h2>
-
-      {/* Filters and Buttons */}
-      <div className="flex justify-between w-full mb-4">
-        {/* Left Side: Dropdowns */}
-        <div className="flex gap-4">
-          {/* Student ID Search */}
-          <div className="flex-1">
-            <label className="block mb-2 text-lg font-medium">Search</label>
-            <input
-              type="text"
-              value={searchId}
-              onChange={handleSearchChange}
-              placeholder="Enter Student ID"
-              className="w-full p-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-            />
+    <div className="min-h-screen bg-white p-6">
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Header Section */}
+        <div className="bg-white/90 backdrop-blur-lg rounded-3xl shadow-2xl overflow-hidden">
+          <div className="relative bg-[#0f8686] pt-8 pb-16">
+            <div className="relative z-10 text-center px-6">
+              <FaFileDownload className="mx-auto text-white/90 text-4xl mb-2" />
+              <h2 className="text-2xl font-bold text-white mb-1">
+                Attendance Report
+              </h2>
+              <p className="text-white/80 text-sm">
+                Generate and export attendance reports
+              </p>
+            </div>
+            <div className="absolute bottom-0 left-0 right-0">
+              <svg viewBox="0 0 1440 120" className="w-full h-[60px] fill-white/90">
+                <path d="M0,64L80,69.3C160,75,320,85,480,80C640,75,800,53,960,48C1120,43,1280,53,1360,58.7L1440,64L1440,120L1360,120C1280,120,1120,120,960,120C800,120,640,120,480,120C320,120,160,120,80,120L0,120Z"></path>
+              </svg>
+            </div>
           </div>
 
-          {/* Event Filter */}
-          <div className="flex-1">
-            <label className="block mb-2 text-lg font-medium">Select Event</label>
-            <select
-              value={selectedEvent}
-              onChange={handleEventChange}
-              className="w-full p-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-            >
-              <option value="">All Events</option>
-              {events.map((event) => (
-                <option key={event.id} value={event.id}>
-                  {event.title}
-                </option>
-              ))}
-            </select>
-          </div>
+          {/* Filters Section */}
+          <div className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              {/* Search Filter */}
+              <div className="relative">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Search Student ID
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={searchId}
+                    onChange={handleSearchChange}
+                    placeholder="Enter Student ID"
+                    className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#0f8686] focus:border-transparent transition duration-200"
+                  />
+                  <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                </div>
+              </div>
 
-          {/* Year Filter */}
-          <div className="flex-1">
-            <label className="block mb-2 text-lg font-medium">Select Year</label>
-            <select
-              value={selectedYear}
-              onChange={handleYearChange}
-              className="w-full p-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-            >
-              <option value="">All Years</option>
-              {years.map((year, index) => (
-                <option key={index} value={year}>
-                  {year}
-                </option>
-              ))}
-            </select>
+              {/* Event Filter */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Select Event
+                </label>
+                <div className="relative">
+                  <select
+                    value={selectedEvent}
+                    onChange={handleEventChange}
+                    className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#0f8686] focus:border-transparent transition duration-200 appearance-none"
+                  >
+                    <option value="">All Events</option>
+                    {events.map((event) => (
+                      <option key={event.id} value={event.id}>
+                        {event.title}
+                      </option>
+                    ))}
+                  </select>
+                  <FaCalendarAlt className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                </div>
+              </div>
+
+              {/* Year Filter */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Select Year
+                </label>
+                <div className="relative">
+                  <select
+                    value={selectedYear}
+                    onChange={handleYearChange}
+                    className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#0f8686] focus:border-transparent transition duration-200 appearance-none"
+                  >
+                    <option value="">All Years</option>
+                    {years.map((year, index) => (
+                      <option key={index} value={year}>
+                        {year}
+                      </option>
+                    ))}
+                  </select>
+                  <FaUserGraduate className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                </div>
+              </div>
+            </div>
+
+            {/* Export Button */}
+            <div className="flex justify-end">
+              <button
+                onClick={handleExportPDF}
+                disabled={filteredRecords.length === 0}
+                className={`flex items-center space-x-2 px-6 py-2.5 rounded-xl font-medium transition duration-200 ${
+                  filteredRecords.length === 0
+                    ? 'bg-gray-300 cursor-not-allowed'
+                    : 'bg-[#0f8686] text-white hover:bg-[#0a6565]'
+                }`}
+              >
+                <FaFileDownload className="text-lg" />
+                <span>Export PDF</span>
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Right Side: Buttons */}
-        <div className="flex gap-2">
-          {/* Print Button */}
-          {/* <button
-            onClick={handlePrint}
-            className="px-2 py-1 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700 transition"
-            disabled={!selectedEvent}
-          >
-            Print
-          </button> */}
+        {/* Records Table */}
+        <div className="bg-white/90 backdrop-blur-lg rounded-3xl shadow-2xl overflow-hidden">
+          <div className="relative bg-[#0f8686] pt-8 pb-16">
+            <div className="relative z-10 text-center px-6">
+              <FaFilter className="mx-auto text-white/90 text-4xl mb-2" />
+              <h2 className="text-2xl font-bold text-white mb-1">
+                Filtered Results
+              </h2>
+              <p className="text-white/80 text-sm">
+                {filteredRecords.length} records found
+              </p>
+            </div>
+            <div className="absolute bottom-0 left-0 right-0">
+              <svg viewBox="0 0 1440 120" className="w-full h-[60px] fill-white/90">
+                <path d="M0,64L80,69.3C160,75,320,85,480,80C640,75,800,53,960,48C1120,43,1280,53,1360,58.7L1440,64L1440,120L1360,120C1280,120,1120,120,960,120C800,120,640,120,480,120C320,120,160,120,80,120L0,120Z"></path>
+              </svg>
+            </div>
+          </div>
 
-          {/* Export PDF Button */}
-          <button
-            onClick={handleExportPDF}
-            className="p-1 bg-green-600 text-white rounded-md text-sm hover:bg-green-700 transition"
-            disabled={filteredRecords.length === 0}
-          >
-            Export PDF
-          </button>
+          <div className="p-6">
+            <div className="overflow-x-auto">
+              <div className="inline-block min-w-full align-middle">
+                <div className="overflow-hidden rounded-xl shadow-lg">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Event
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Student ID
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Full Name
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Year
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Check-in Time
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Check-out Time
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {filteredRecords.length === 0 ? (
+                        <tr>
+                          <td
+                            colSpan="6"
+                            className="px-6 py-4 text-center text-gray-500"
+                          >
+                            No attendance records found.
+                          </td>
+                        </tr>
+                      ) : (
+                        filteredRecords.map((record, index) => (
+                          <tr
+                            key={index}
+                            className="hover:bg-gray-50 transition-colors"
+                          >
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              {getEventTitle(record.event_id)}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              {record.studentId}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              {`${record.firstname} ${record.middlename || ""} ${record.lastname}`}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              {record.year}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              {new Date(record.checkInTime).toLocaleString()}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              {record.checkOutTime
+                                ? new Date(record.checkOutTime).toLocaleString()
+                                : "N/A"}
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-
-      {/* Attendance Records Table */}
-      <div className="w-full mt-6">
-        <div className="border border-gray-300 rounded-md p-4 h-64 overflow-y-auto">
-          {filteredRecords.length === 0 ? (
-            <p>No attendance records found.</p>
-          ) : (
-            <table className="min-w-full border-collapse">
-              <thead>
-                <tr>
-                  <th className="border px-4 py-2">Event</th>
-                  <th className="border px-4 py-2">Student ID</th>
-                  <th className="border px-4 py-2">Full Name</th>
-                  <th className="border px-4 py-2">Year</th>
-                  <th className="border px-4 py-2">Check-in Time</th>
-                  <th className="border px-4 py-2">Check-out Time</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredRecords.map((record) => (
-                  <tr key={record.studentId}>
-                    <td className="border px-4 py-2">{getEventTitle(record.event_id)}</td>
-                    <td className="border px-4 py-2">{record.studentId}</td>
-                    <td className="border px-4 py-2">{`${record.firstname} ${record.middlename || ""} ${record.lastname}`}</td>
-                    <td className="border px-4 py-2">{record.year}</td>
-                    <td className="border px-4 py-2">{new Date(record.checkInTime).toLocaleString("en-US")}</td>
-                    <td className="border px-4 py-2">{record.checkOutTime ? new Date(record.checkOutTime).toLocaleString("en-US") : "N/A"}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
-      </div>
+      <Toaster position="top-right" />
     </div>
   );
 };
