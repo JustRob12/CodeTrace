@@ -158,17 +158,19 @@ const CalendarPage = () => {
   // Add this function to customize event rendering
   const renderEventContent = (eventInfo) => {
     const isToday = new Date(eventInfo.event.start).toDateString() === new Date().toDateString();
-    
+    const now = new Date();
+    const isOngoing = new Date(eventInfo.event.start) <= now && now <= new Date(eventInfo.event.end);
+
     return (
-      <div className={`event-content ${isToday ? 'today-event' : ''}`}>
-        <div className="flex items-center gap-1">
-          {isToday && <FaBell className="text-yellow-500 animate-pulse" />}
-          <FaCalendarAlt className={isToday ? "text-black" : "text-teal-600"} />
-          <span className={isToday ? "text-black font-medium" : ""}>{eventInfo.event.title}</span>
+      <div className={`event-content ${isToday || isOngoing ? 'highlight-event' : ''}`}>
+        <div className="flex items-center gap-2">
+          {(isToday || isOngoing) && <FaBell className="text-yellow-500 animate-pulse" />}
+          <FaCalendarAlt className={isToday || isOngoing ? "text-white" : "text-teal-600"} />
+          <span className={isToday || isOngoing ? "text-white font-semibold" : ""}>{eventInfo.event.title}</span>
         </div>
-        {isToday && (
-          <div className="text-xs text-black font-medium">
-            Today at {new Date(eventInfo.event.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+        {(isToday || isOngoing) && (
+          <div className="text-xs text-white font-medium">
+            {isToday ? 'Today' : 'Ongoing'} at {new Date(eventInfo.event.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
           </div>
         )}
       </div>

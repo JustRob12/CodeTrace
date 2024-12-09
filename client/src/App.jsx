@@ -13,6 +13,7 @@ import ViewStudents from './components/ViewStudents';
 import Semester from './components/Semester';
 import StudentDashboard from './components/StudentDashboard';
 import History from './components/History';
+import EventAttendanceChart from './components/EventAttendanceCharts';
 import './tailwind.css';
 
 Modal.setAppElement('#root');
@@ -37,6 +38,7 @@ const App = () => {
                 <Route path="/semester" element={<Layout><Semester /></Layout>} />
                 <Route path="/student-dashboard" element={<StudentDashboard />} />
                 <Route path="/history" element={<History />} />
+                <Route path="/event-attendance" element={<Layout><EventAttendanceChart /></Layout>} />
             </Routes>
         </Router>
     );

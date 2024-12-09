@@ -5,6 +5,7 @@ import React, { useEffect, useState } from "react";
 import { Pie } from "react-chartjs-2";
 import CountUp from "react-countup";
 import { FaUser, FaChartPie, FaCalendarCheck, FaBell } from 'react-icons/fa';
+import EventAttendanceChart from './EventAttendanceCharts';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -17,11 +18,15 @@ const Dashboard = () => {
   });
   const [totalStudents, setTotalStudents] = useState(0);
   const [events, setEvents] = useState([]);
+  const [ongoingEvents, setOngoingEvents] = useState([]);
   const activeYear = localStorage.getItem('activeYear');
 
   useEffect(() => {
     fetchStudentCounts();
     fetchEvents();
+    // Refresh events every minute to keep the status current
+    const interval = setInterval(fetchEvents, 60000);
+    return () => clearInterval(interval);
   }, []);
 
   const fetchStudentCounts = async () => {
@@ -56,8 +61,45 @@ const Dashboard = () => {
   // New function to fetch events
   const fetchEvents = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/api/auth/events"); // Adjust this URL as needed
-      setEvents(response.data);
+      // Get the active year from localStorage
+      const activeYear = localStorage.getItem('activeYear');
+      if (!activeYear) {
+        console.log('No active semester selected');
+        return;
+      }
+
+      const response = await axios.get(`http://localhost:5000/api/auth/events?academicYear=${activeYear}`);
+      const events = response.data;
+
+      // Filter events for the selected academic year
+      const semesterEvents = events.filter(event => {
+        const eventDate = new Date(event.start);
+        const eventYear = `${eventDate.getFullYear()}-${eventDate.getFullYear() + 1}`;
+        return eventYear === activeYear;
+      });
+
+      setEvents(semesterEvents); // Set filtered events
+
+      // Filter ongoing events from semester events
+      const today = new Date();
+      const ongoing = semesterEvents.filter(event => {
+        const startDate = new Date(event.start);
+        startDate.setHours(0, 0, 0, 0);
+        const endDate = new Date(event.end);
+        endDate.setHours(23, 59, 59, 999);
+
+        // Check if the event is happening today
+        return today >= startDate && today <= endDate;
+      });
+
+      setOngoingEvents(ongoing);
+
+      // Log for debugging
+      console.log('Current Semester:', activeYear);
+      console.log('All Events:', events);
+      console.log('Semester Events:', semesterEvents);
+      console.log('Ongoing Events:', ongoing);
+
     } catch (error) {
       console.error("Error fetching events:", error);
     }
@@ -273,6 +315,51 @@ const Dashboard = () => {
               )}
             </div>
           </div>
+        </div>
+
+        {/* Additional Sections */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Bar Chart */}
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <div className="flex items-center gap-2 mb-6 pb-4 border-b border-teal-100">
+              <FaChartPie className="text-teal-600" />
+              <h2 className="text-xl font-bold text-teal-700">Event Attendance</h2>
+            </div>
+            <EventAttendanceChart />
+          </div>
+
+          {/* Today's Events Section */}
+          {ongoingEvents.length > 0 && (
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <div className="flex items-center gap-2 mb-6 pb-4 border-b border-teal-100">
+                <FaBell className="text-teal-600" />
+                <h2 className="text-xl font-bold text-teal-700">Today's Ongoing Events</h2>
+              </div>
+              <div className="space-y-4">
+                {ongoingEvents.map((event) => (
+                  <div 
+                    key={event.id}
+                    className="flex items-center justify-between p-4 bg-amber-50 border-l-4 border-amber-500 rounded-lg"
+                  >
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-semibold text-lg text-gray-800">{event.title}</h3>
+                        <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></div>
+                      </div>
+                      <p className="text-sm text-gray-600 mt-1">
+                        {new Date(event.start).toLocaleDateString()} - {new Date(event.end).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-amber-100 text-amber-800">
+                        Ongoing Today
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -12,6 +12,7 @@ const StudentDashboard = () => {
     const studentId = localStorage.getItem('studentId');
     const activeYear = localStorage.getItem('activeYear');
     const [showProfile, setShowProfile] = useState(false);
+    const [ongoingEvents, setOngoingEvents] = useState([]);
 
     useEffect(() => {
         const fetchStudentData = async () => {
@@ -26,7 +27,28 @@ const StudentDashboard = () => {
         const fetchEvents = async () => {
             try {
                 const response = await axios.get("http://localhost:5000/api/auth/events");
-                setEvents(response.data);
+                const events = response.data;
+                
+                // Filter ongoing events
+                const today = new Date();
+                const ongoing = events.filter(event => {
+                    const startDate = new Date(event.start);
+                    startDate.setHours(0, 0, 0, 0);
+                    const endDate = new Date(event.end);
+                    endDate.setHours(23, 59, 59, 999);
+                    return today >= startDate && today <= endDate;
+                }).map(event => {
+                    const endDate = new Date(event.end);
+                    const daysLeft = Math.ceil((endDate - today) / (1000 * 60 * 60 * 24));
+                    return { 
+                        ...event, 
+                        daysLeft,
+                        isToday: true
+                    };
+                });
+
+                setOngoingEvents(ongoing);
+                setEvents(events);
             } catch (error) {
                 console.error("Error fetching events:", error);
             }
@@ -220,6 +242,54 @@ const StudentDashboard = () => {
                 onProfileClick={handleProfileClick}
             />
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-20">
+                {ongoingEvents.length > 0 && (
+                    <div className="mb-6">
+                        <div className="bg-white/90 backdrop-blur-lg rounded-3xl shadow-2xl overflow-hidden">
+                            <div className="relative bg-[#0f8686] pt-8 pb-16">
+                                <div className="relative z-10 text-center">
+                                    <FaBell className="mx-auto text-white/90 text-4xl mb-2" />
+                                    <h2 className="text-2xl font-bold text-white mb-1">Ongoing Events</h2>
+                                </div>
+                                <div className="absolute bottom-0 left-0 right-0">
+                                    <svg viewBox="0 0 1440 120" className="w-full h-[60px] fill-white/90">
+                                        <path d="M0,64L80,69.3C160,75,320,85,480,80C640,75,800,53,960,48C1120,43,1280,53,1360,58.7L1440,64L1440,120L1360,120C1280,120,1120,120,960,120C800,120,640,120,480,120C320,120,160,120,80,120L0,120Z"></path>
+                                    </svg>
+                                </div>
+                            </div>
+
+                            <div className="p-6">
+                                <div className="space-y-4">
+                                    {ongoingEvents.map((event) => (
+                                        <div 
+                                            key={event.id}
+                                            className="bg-gradient-to-r from-amber-50 to-amber-100 p-4 rounded-xl border-l-4 border-amber-500 shadow-lg"
+                                        >
+                                            <div className="flex items-center justify-between">
+                                                <div>
+                                                    <div className="flex items-center gap-2">
+                                                        <h3 className="font-semibold text-lg text-gray-800">
+                                                            {event.title}
+                                                        </h3>
+                                                        <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></div>
+                                                    </div>
+                                                    <p className="text-sm text-gray-600 mt-1">
+                                                        {new Date(event.start).toLocaleDateString()} - {new Date(event.end).toLocaleDateString()}
+                                                    </p>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-amber-100 text-amber-800">
+                                                        Ongoing Today
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+                
                 {showProfile ? (
                     // Show profile content
                     <div className="bg-white/90 backdrop-blur-lg rounded-3xl shadow-2xl overflow-hidden">
