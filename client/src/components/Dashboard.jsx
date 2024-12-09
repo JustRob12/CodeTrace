@@ -4,7 +4,7 @@ import { ArcElement, Chart as ChartJS, Legend, Tooltip } from "chart.js";
 import React, { useEffect, useState } from "react";
 import { Pie } from "react-chartjs-2";
 import CountUp from "react-countup";
-import { FaUser, FaChartPie, FaCalendarCheck } from 'react-icons/fa';
+import { FaUser, FaChartPie, FaCalendarCheck, FaBell } from 'react-icons/fa';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -120,6 +120,29 @@ const Dashboard = () => {
     return yearB - yearA;
   });
 
+  // Add this helper function to check if an event is today
+  const isEventToday = (eventDate) => {
+    const today = new Date();
+    const eventDay = new Date(eventDate);
+    return eventDay.toDateString() === today.toDateString();
+  };
+
+  // Modify the Events Section to sort today's events first
+  const sortEventsByToday = (events) => {
+    if (!events) return [];
+    
+    return [...events].sort((a, b) => {
+      const isEventTodayA = isEventToday(a.start);
+      const isEventTodayB = isEventToday(b.start);
+      
+      if (isEventTodayA && !isEventTodayB) return -1;
+      if (!isEventTodayA && isEventTodayB) return 1;
+      
+      // If both events are today or both are not today, sort by start time
+      return new Date(a.start) - new Date(b.start);
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto space-y-6">
@@ -190,24 +213,52 @@ const Dashboard = () => {
               </h2>
             </div>
             <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2">
-              {activeYear && groupedEvents[activeYear]?.map((event) => (
-                <div key={event.id} 
-                     className="bg-gradient-to-r from-teal-50 to-cyan-50 p-4 rounded-lg border border-teal-100 hover:shadow-md transition-shadow">
-                  <h3 className="font-semibold text-teal-700 mb-2">{event.title}</h3>
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <p className="text-teal-600 font-medium">Start:</p>
-                      <p className="text-gray-700">{new Date(event.start).toLocaleDateString()}</p>
-                      <p className="text-gray-500">{new Date(event.start).toLocaleTimeString()}</p>
+              {activeYear && sortEventsByToday(groupedEvents[activeYear])?.map((event) => {
+                const isToday = isEventToday(event.start);
+                
+                return (
+                  <div 
+                    key={event.id} 
+                    className={`bg-gradient-to-r ${
+                      isToday 
+                        ? 'from-teal-100 to-cyan-100 border-l-4 border-l-yellow-400' 
+                        : 'from-teal-50 to-cyan-50'
+                    } p-4 rounded-lg border border-teal-100 hover:shadow-md transition-shadow`}
+                  >
+                    <div className="flex justify-between items-start mb-2">
+                      <h3 className={`font-semibold ${isToday ? 'text-black' : 'text-teal-700'}`}>
+                        {event.title}
+                      </h3>
+                      {isToday && (
+                        <div className="flex items-center gap-1 bg-yellow-100 px-2 py-1 rounded-full">
+                          <FaBell className="text-yellow-500 animate-pulse" size={12} />
+                          <span className="text-xs font-medium text-yellow-700">Today</span>
+                        </div>
+                      )}
                     </div>
-                    <div>
-                      <p className="text-teal-600 font-medium">End:</p>
-                      <p className="text-gray-700">{new Date(event.end).toLocaleDateString()}</p>
-                      <p className="text-gray-500">{new Date(event.end).toLocaleTimeString()}</p>
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <p className={`font-medium ${isToday ? 'text-black' : 'text-teal-600'}`}>Start:</p>
+                        <p className={isToday ? 'text-black' : 'text-gray-700'}>
+                          {new Date(event.start).toLocaleDateString()}
+                        </p>
+                        <p className={isToday ? 'text-black' : 'text-gray-500'}>
+                          {new Date(event.start).toLocaleTimeString()}
+                        </p>
+                      </div>
+                      <div>
+                        <p className={`font-medium ${isToday ? 'text-black' : 'text-teal-600'}`}>End:</p>
+                        <p className={isToday ? 'text-black' : 'text-gray-700'}>
+                          {new Date(event.end).toLocaleDateString()}
+                        </p>
+                        <p className={isToday ? 'text-black' : 'text-gray-500'}>
+                          {new Date(event.end).toLocaleTimeString()}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
               {(!activeYear || !groupedEvents[activeYear]) && (
                 <div className="text-center text-gray-500 py-4">
                   {activeYear ? 'No events found for this semester.' : 'Please select an active semester to view events.'}

@@ -5,7 +5,7 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import Modal from "react-modal";
-import { FaCalendarAlt, FaPlus, FaClock, FaTrash } from 'react-icons/fa';
+import { FaCalendarAlt, FaPlus, FaClock, FaTrash, FaBell } from 'react-icons/fa';
 import "./CalendarPage.css";
 import Swal from "sweetalert2";
 
@@ -155,6 +155,26 @@ const CalendarPage = () => {
     setEventEnd("");
   };
 
+  // Add this function to customize event rendering
+  const renderEventContent = (eventInfo) => {
+    const isToday = new Date(eventInfo.event.start).toDateString() === new Date().toDateString();
+    
+    return (
+      <div className={`event-content ${isToday ? 'today-event' : ''}`}>
+        <div className="flex items-center gap-1">
+          {isToday && <FaBell className="text-yellow-500 animate-pulse" />}
+          <FaCalendarAlt className={isToday ? "text-black" : "text-teal-600"} />
+          <span className={isToday ? "text-black font-medium" : ""}>{eventInfo.event.title}</span>
+        </div>
+        {isToday && (
+          <div className="text-xs text-black font-medium">
+            Today at {new Date(eventInfo.event.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
@@ -228,6 +248,11 @@ const CalendarPage = () => {
                   eventClick={(info) => openModal(info.event)}
                   height="auto"
                   className="rounded-lg overflow-hidden"
+                  eventContent={renderEventContent}
+                  eventClassNames={(arg) => {
+                    const isToday = new Date(arg.event.start).toDateString() === new Date().toDateString();
+                    return isToday ? 'today-event-highlight' : '';
+                  }}
                 />
               </div>
             </div>

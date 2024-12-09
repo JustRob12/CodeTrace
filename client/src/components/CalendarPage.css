@@ -94,3 +94,62 @@
 .close-button:hover {
   background-color: #0056b3; /* Darker blue on hover */
 }
+
+/* Add these styles to your existing CSS */
+.event-content {
+  padding: 2px 4px;
+  font-size: 0.875rem;
+}
+
+.today-event {
+  background-color: rgba(13, 148, 136, 0.1);
+  border-left: 3px solid #0d9488;
+  padding-left: 8px;
+  color: black !important;
+}
+
+.today-event-highlight {
+  background-color: rgba(13, 148, 136, 0.1) !important;
+  border: 1px solid #0d9488 !important;
+  border-radius: 4px;
+  color: black !important;
+}
+
+/* Ensure all text in today's events is black */
+.today-event * {
+  color: black !important;
+}
+
+/* Animation for the bell icon */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s infinite;
+}
+
+/* Make events more visible */
+.fc-event {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.fc-event:hover {
+  transform: scale(1.02);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Style today's date in the calendar */
+.fc .fc-day-today {
+  background-color: rgba(13, 148, 136, 0.05) !important;
+  border: 2px solid #74f0e5 !important;
+}

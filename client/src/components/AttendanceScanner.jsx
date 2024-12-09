@@ -12,6 +12,7 @@ const AttendanceScanner = () => {
   const cooldownRef = useRef(false);
   const [scanStatus, setScanStatus] = useState("");
   const [scannerActive, setScannerActive] = useState(true);
+  const [activeYear, setActiveYear] = useState(localStorage.getItem('activeYear') || null);
 
   const swapFirstAndLast = (arr) => {
     if (arr.length < 2) return arr;
@@ -36,7 +37,12 @@ const AttendanceScanner = () => {
   const fetchEvents = async () => {
     try {
       const response = await axios.get("http://localhost:5000/api/auth/events");
-      setEvents(response.data);
+      const filteredEvents = response.data.filter(event => {
+        const startYear = new Date(event.start).getFullYear();
+        const academicYear = `${startYear}-${startYear + 1}`;
+        return academicYear === activeYear;
+      });
+      setEvents(filteredEvents);
     } catch (error) {
       toast.error("Error fetching events.");
     }
@@ -151,12 +157,20 @@ const AttendanceScanner = () => {
                     onChange={handleEventChange}
                     className="w-full p-3 border border-teal-100 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition duration-200"
                   >
-                    <option value="">Select an event</option>
-                    {events.map((event) => (
-                      <option key={event.id} value={event.id}>
-                        {event.title}
-                      </option>
-                    ))}
+                    {!activeYear ? (
+                      <option value="">Please activate a semester first</option>
+                    ) : events.length === 0 ? (
+                      <option value="">No events in active semester</option>
+                    ) : (
+                      <>
+                        <option value="">Select an event</option>
+                        {events.map((event) => (
+                          <option key={event.id} value={event.id}>
+                            {event.title}
+                          </option>
+                        ))}
+                      </>
+                    )}
                   </select>
                 </div>
 

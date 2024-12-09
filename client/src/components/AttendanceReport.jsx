@@ -3,7 +3,8 @@ import jsPDF from "jspdf";
 import "jspdf-autotable";
 import React, { useEffect, useState } from "react";
 import { toast, Toaster } from "react-hot-toast";
-import { FaFileDownload, FaSearch, FaCalendarAlt, FaUserGraduate, FaFilter, FaGraduationCap } from 'react-icons/fa';
+import { FaFileDownload, FaSearch, FaCalendarAlt, FaUserGraduate, FaFilter, FaGraduationCap, FaEye, FaDownload, FaTimes } from 'react-icons/fa';
+import headerImage from '../assets/header.png';
 
 const AttendanceReport = () => {
   const [attendanceRecords, setAttendanceRecords] = useState([]);
@@ -13,6 +14,8 @@ const AttendanceReport = () => {
   const [selectedEvent, setSelectedEvent] = useState("");
   const [selectedYear, setSelectedYear] = useState("");
   const [searchId, setSearchId] = useState("");
+  const [pdfPreview, setPdfPreview] = useState(null);
+  const [showPreview, setShowPreview] = useState(false);
 
   useEffect(() => {
     fetchAttendanceRecords();
@@ -140,14 +143,19 @@ const AttendanceReport = () => {
   
 
   // Function to handle PDF export
-  const handleExportPDF = () => {
+  const generatePDF = () => {
     const doc = new jsPDF();
     const eventTitle = getEventTitle(selectedEvent);
     
-    doc.setFontSize(18);
-    doc.text(`${eventTitle} - Attendance Report`, 14, 22);
+    // Add header image
+    doc.addImage(headerImage, 'PNG', 15, 10, 180, 30);
     
-    // Add a table
+    doc.setFontSize(18);
+    doc.text(`${eventTitle} - Attendance Report`, 14, 50);
+    
+    doc.setFontSize(12);
+    doc.text(`Date: ${new Date().toLocaleDateString()}`, 14, 60);
+    
     doc.autoTable({
       head: [['Event', 'Student ID', 'Full Name', 'Year', 'Check-in Time', 'Check-out Time']],
       body: filteredRecords.map((record) => [
@@ -158,11 +166,42 @@ const AttendanceReport = () => {
         new Date(record.checkInTime).toLocaleString("en-US"),
         record.checkOutTime ? new Date(record.checkOutTime).toLocaleString("en-US") : "N/A",
       ]),
-      startY: 30,
+      startY: 70,
+      styles: { fontSize: 10 },
+      headStyles: { fillColor: [15, 134, 134] },
+      alternateRowStyles: { fillColor: [245, 247, 250] },
     });
 
-    // Save the PDF
-    doc.save('attendance_report.pdf');
+    return doc;
+  };
+
+  const handlePreview = () => {
+    try {
+      const doc = generatePDF();
+      // Create blob and URL
+      const pdfBlob = doc.output('blob');
+      const pdfUrl = URL.createObjectURL(pdfBlob);
+      setPdfPreview(pdfUrl);
+      setShowPreview(true);
+    } catch (error) {
+      console.error('Error generating preview:', error);
+      toast.error('Error generating preview');
+    }
+  };
+
+  // Clean up URL when modal closes
+  const handleClosePreview = () => {
+    if (pdfPreview) {
+      URL.revokeObjectURL(pdfPreview);
+    }
+    setPdfPreview(null);
+    setShowPreview(false);
+  };
+
+  const handleDownload = () => {
+    const doc = generatePDF();
+    doc.save(`attendance_report_${new Date().toISOString().split('T')[0]}.pdf`);
+    setShowPreview(false);
   };
 
   return (
@@ -241,12 +280,19 @@ const AttendanceReport = () => {
             </div>
 
             {/* Download Button */}
-            <div className="mt-6">
+            <div className="mt-6 flex gap-4">
               <button
-                onClick={handleExportPDF}
-                className="w-full bg-gradient-to-r from-teal-600 to-cyan-600 text-white py-3 rounded-lg font-medium hover:from-teal-700 hover:to-cyan-700 transition duration-200 flex items-center justify-center space-x-2"
+                onClick={handlePreview}
+                className="flex-1 bg-gradient-to-r from-teal-600 to-cyan-600 text-white py-3 rounded-lg font-medium hover:from-teal-700 hover:to-cyan-700 transition duration-200 flex items-center justify-center space-x-2"
               >
-                <FaFileDownload className="text-lg" />
+                <FaEye className="text-lg" />
+                <span>Preview Report</span>
+              </button>
+              <button
+                onClick={handleDownload}
+                className="flex-1 bg-gradient-to-r from-teal-600 to-cyan-600 text-white py-3 rounded-lg font-medium hover:from-teal-700 hover:to-cyan-700 transition duration-200 flex items-center justify-center space-x-2"
+              >
+                <FaDownload className="text-lg" />
                 <span>Download Report</span>
               </button>
             </div>
@@ -323,6 +369,36 @@ const AttendanceReport = () => {
           </div>
         </div>
       </div>
+
+      {/* PDF Preview Modal */}
+      {showPreview && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+            <div className="p-4 bg-gradient-to-r from-teal-600 to-cyan-600 text-white rounded-t-lg flex justify-between items-center">
+              <h3 className="text-lg font-medium">PDF Preview</h3>
+              <button
+                onClick={handleClosePreview}
+                className="text-white hover:text-gray-200"
+              >
+                <FaTimes className="text-xl" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-auto p-4">
+              {pdfPreview && (
+                <embed
+                  src={pdfPreview}
+                  type="application/pdf"
+                  className="w-full h-full min-h-[60vh]"
+                />
+              )}
+            </div>
+            <div className="p-4 border-t">
+           
+            </div>
+          </div>
+        </div>
+      )}
+
       <Toaster position="top-right" />
     </div>
   );

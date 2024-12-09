@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import HeaderStudent from './HeaderStudent';
 import StudentQRCode from './QRCode';
-import { FaQrcode, FaCalendarAlt, FaHistory, FaUser } from 'react-icons/fa';
+import { FaQrcode, FaCalendarAlt, FaHistory, FaUser, FaBell } from 'react-icons/fa';
 import History from './History';
 
 const StudentDashboard = () => {
@@ -49,6 +49,28 @@ const StudentDashboard = () => {
         return acc;
     }, {});
 
+    // Add this helper function to check if an event is today
+    const isEventToday = (eventDate) => {
+        const today = new Date();
+        const eventDay = new Date(eventDate);
+        return eventDay.toDateString() === today.toDateString();
+    };
+
+    // Add this function to sort events
+    const sortEventsByToday = (events) => {
+        if (!events) return [];
+        
+        return [...events].sort((a, b) => {
+            const isEventTodayA = isEventToday(a.start);
+            const isEventTodayB = isEventToday(b.start);
+            
+            if (isEventTodayA && !isEventTodayB) return -1;
+            if (!isEventTodayA && isEventTodayB) return 1;
+            
+            return new Date(a.start) - new Date(b.start);
+        });
+    };
+
     const renderContent = () => {
         switch(activeSection) {
             case 'events':
@@ -61,7 +83,6 @@ const StudentDashboard = () => {
                                     {activeYear ? `${activeYear} Events` : 'No Active Semester Selected'}
                                 </h2>
                             </div>
-                            {/* Wave effect */}
                             <div className="absolute bottom-0 left-0 right-0">
                                 <svg viewBox="0 0 1440 120" className="w-full h-[60px] fill-white/90">
                                     <path d="M0,64L80,69.3C160,75,320,85,480,80C640,75,800,53,960,48C1120,43,1280,53,1360,58.7L1440,64L1440,120L1360,120C1280,120,1120,120,960,120C800,120,640,120,480,120C320,120,160,120,80,120L0,120Z"></path>
@@ -71,27 +92,57 @@ const StudentDashboard = () => {
 
                         <div className="p-6">
                             {activeYear && groupedEvents[activeYear] ? (
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    {groupedEvents[activeYear].map((event) => (
-                                        <div
-                                            key={event.id}
-                                            className="bg-white/80 p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02]"
-                                        >
-                                            <h3 className="font-bold text-xl text-[#0f8686] mb-3">{event.title}</h3>
-                                            <div className="space-y-3 text-gray-600">
-                                                <div>
-                                                    <p className="font-semibold text-sm">Start:</p>
-                                                    <p className="text-base">{new Date(event.start).toLocaleDateString()}</p>
-                                                    <p className="text-sm text-gray-500">{new Date(event.start).toLocaleTimeString()}</p>
+                                <div className="space-y-4">
+                                    {sortEventsByToday(groupedEvents[activeYear]).map((event) => {
+                                        const isToday = isEventToday(event.start);
+                                        
+                                        return (
+                                            <div
+                                                key={event.id}
+                                                className={`bg-gradient-to-r ${
+                                                    isToday 
+                                                        ? 'from-teal-100 to-cyan-100 border-l-4 border-l-yellow-400' 
+                                                        : 'from-white/80 to-white/80'
+                                                } p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300`}
+                                            >
+                                                <div className="flex justify-between items-start mb-4">
+                                                    <h3 className={`font-bold text-xl ${isToday ? 'text-black' : 'text-[#0f8686]'}`}>
+                                                        {event.title}
+                                                    </h3>
+                                                    {isToday && (
+                                                        <div className="flex items-center gap-1 bg-yellow-100 px-3 py-1 rounded-full">
+                                                            <FaBell className="text-yellow-500 animate-pulse" size={12} />
+                                                            <span className="text-xs font-medium text-yellow-700">Today</span>
+                                                        </div>
+                                                    )}
                                                 </div>
-                                                <div>
-                                                    <p className="font-semibold text-sm">End:</p>
-                                                    <p className="text-base">{new Date(event.end).toLocaleDateString()}</p>
-                                                    <p className="text-sm text-gray-500">{new Date(event.end).toLocaleTimeString()}</p>
+                                                <div className="grid grid-cols-2 gap-6">
+                                                    <div>
+                                                        <p className={`font-medium text-sm ${isToday ? 'text-black' : 'text-gray-600'}`}>
+                                                            Start:
+                                                        </p>
+                                                        <p className={isToday ? 'text-black' : 'text-gray-700'}>
+                                                            {new Date(event.start).toLocaleDateString()}
+                                                        </p>
+                                                        <p className={isToday ? 'text-black' : 'text-gray-500'}>
+                                                            {new Date(event.start).toLocaleTimeString()}
+                                                        </p>
+                                                    </div>
+                                                    <div>
+                                                        <p className={`font-medium text-sm ${isToday ? 'text-black' : 'text-gray-600'}`}>
+                                                            End:
+                                                        </p>
+                                                        <p className={isToday ? 'text-black' : 'text-gray-700'}>
+                                                            {new Date(event.end).toLocaleDateString()}
+                                                        </p>
+                                                        <p className={isToday ? 'text-black' : 'text-gray-500'}>
+                                                            {new Date(event.end).toLocaleTimeString()}
+                                                        </p>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             ) : (
                                 <div className="text-center text-gray-500 py-8">
