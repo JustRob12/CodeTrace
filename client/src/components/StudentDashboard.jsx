@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import HeaderStudent from './HeaderStudent';
 import StudentQRCode from './QRCode';
-import { FaQrcode, FaCalendarAlt, FaUserGraduate, FaFingerprint } from 'react-icons/fa';
+import { FaQrcode, FaCalendarAlt, FaHistory, FaUser } from 'react-icons/fa';
+import History from './History';
 
 const StudentDashboard = () => {
     const [studentData, setStudentData] = useState(null);
@@ -10,6 +11,7 @@ const StudentDashboard = () => {
     const [activeSection, setActiveSection] = useState('info');
     const studentId = localStorage.getItem('studentId');
     const activeYear = localStorage.getItem('activeYear');
+    const [showProfile, setShowProfile] = useState(false);
 
     useEffect(() => {
         const fetchStudentData = async () => {
@@ -101,13 +103,15 @@ const StudentDashboard = () => {
                 );
             case 'qr':
                 return <StudentQRCode studentId={studentId} />;
+            case 'history':
+                return <History studentId={studentId} />;
             case 'info':
             default:
                 return (
                     <div className="bg-white/90 backdrop-blur-lg rounded-3xl shadow-2xl overflow-hidden">
                         <div className="relative bg-[#0f8686] pt-8 pb-16">
                             <div className="relative z-10 text-center">
-                                <FaUserGraduate className="mx-auto text-white/90 text-4xl mb-2" />
+                                <FaHistory className="mx-auto text-white/90 text-4xl mb-2" />
                                 <h2 className="text-2xl font-bold text-white mb-1">Student Information</h2>
                             </div>
                             {/* Wave effect */}
@@ -144,6 +148,12 @@ const StudentDashboard = () => {
         </div>
     );
 
+    // Add this function to handle profile click
+    const handleProfileClick = () => {
+        setShowProfile(true);
+        setActiveSection('info'); // Switch to info section when profile is clicked
+    };
+
     if (!studentData) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-[#18e1e7] to-[#0f8686] flex items-center justify-center">
@@ -154,9 +164,44 @@ const StudentDashboard = () => {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-[#18e1e7] to-[#0f8686]">
-            <HeaderStudent studentName={`${studentData.firstname} ${studentData.lastname}`} />
+            <HeaderStudent 
+                studentName={`${studentData.firstname} ${studentData.lastname}`} 
+                onProfileClick={handleProfileClick}
+            />
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-20">
-                {renderContent()}
+                {showProfile ? (
+                    // Show profile content
+                    <div className="bg-white/90 backdrop-blur-lg rounded-3xl shadow-2xl overflow-hidden">
+                        <div className="relative bg-[#0f8686] pt-8 pb-16">
+                            <div className="relative z-10 text-center">
+                                <FaUser className="mx-auto text-white/90 text-4xl mb-2" />
+                                <h2 className="text-2xl font-bold text-white mb-1">Profile Information</h2>
+                            </div>
+                            {/* Wave effect */}
+                            <div className="absolute bottom-0 left-0 right-0">
+                                <svg viewBox="0 0 1440 120" className="w-full h-[60px] fill-white/90">
+                                    <path d="M0,64L80,69.3C160,75,320,85,480,80C640,75,800,53,960,48C1120,43,1280,53,1360,58.7L1440,64L1440,120L1360,120C1280,120,1120,120,960,120C800,120,640,120,480,120C320,120,160,120,80,120L0,120Z"></path>
+                                </svg>
+                            </div>
+                        </div>
+
+                        <div className="p-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <InfoItem label="Student ID" value={studentData.studentId} />
+                                <InfoItem 
+                                    label="Name" 
+                                    value={`${studentData.firstname} ${studentData.middlename || ''} ${studentData.lastname}`} 
+                                />
+                                <InfoItem label="Year" value={studentData.year} />
+                                <InfoItem label="Section" value={studentData.section} />
+                                <InfoItem label="Contact Number" value={studentData.contactNumber} />
+                                <InfoItem label="Email" value={studentData.gmail} />
+                            </div>
+                        </div>
+                    </div>
+                ) : (
+                    renderContent()
+                )}
             </div>
 
             {/* Bottom Navigation Bar */}
@@ -164,22 +209,31 @@ const StudentDashboard = () => {
                 <div className="max-w-7xl mx-auto px-4">
                     <div className="flex justify-around items-center h-16">
                         <NavButton 
-                            icon={<FaUserGraduate />} 
-                            label="Information" 
-                            active={activeSection === 'info'} 
-                            onClick={() => setActiveSection('info')} 
+                            icon={<FaHistory />} 
+                            label="History" 
+                            active={activeSection === 'history'} 
+                            onClick={() => {
+                                setShowProfile(false);
+                                setActiveSection('history');
+                            }} 
                         />
                         <NavButton 
                             icon={<FaCalendarAlt />} 
                             label="Events" 
                             active={activeSection === 'events'} 
-                            onClick={() => setActiveSection('events')} 
+                            onClick={() => {
+                                setShowProfile(false);
+                                setActiveSection('events');
+                            }} 
                         />
                         <NavButton 
                             icon={<FaQrcode />} 
                             label="QR Code" 
                             active={activeSection === 'qr'} 
-                            onClick={() => setActiveSection('qr')} 
+                            onClick={() => {
+                                setShowProfile(false);
+                                setActiveSection('qr');
+                            }} 
                         />
                     </div>
                 </div>

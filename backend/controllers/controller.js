@@ -496,6 +496,126 @@ const getStudentData = (req, res) => {
     );
 };
 
+// Add this new controller function
+const getStudentAttendance = (req, res) => {
+    const { studentId } = req.params;
+    
+    // Updated SQL query to get event_name instead of title
+    const sql = `
+        SELECT 
+            a.*,
+            e.event_name
+        FROM attendance a
+        LEFT JOIN events e ON a.event_id = e.id
+        WHERE a.studentId = ?
+        ORDER BY a.checkInTime DESC
+    `;
+
+    db.query(sql, [studentId], (err, results) => {
+        if (err) {
+            console.error('Database error:', err);
+            return res.status(500).json({ 
+                message: 'Error fetching attendance history',
+                error: err.message,
+                sqlMessage: err.sqlMessage
+            });
+        }
+
+        // Log the results for debugging
+        console.log('Attendance records found:', results.length);
+        
+        res.status(200).json(results);
+    });
+};
+
+// Get all admins
+const getAdmins = (req, res) => {
+    try {
+        const query = 'SELECT admin_id, username FROM admins';
+        console.log('Executing query:', query);
+        
+        db.query(query, (err, results) => {
+            if (err) {
+                console.error('Database error:', err);
+                return res.status(500).json({ 
+                    message: 'Error fetching admins',
+                    error: err.message 
+                });
+            }
+            
+            console.log('Fetched admins:', results);
+            res.status(200).json(results);
+        });
+    } catch (error) {
+        console.error('Server error:', error);
+        res.status(500).json({ 
+            message: 'Server error',
+            error: error.message 
+        });
+    }
+};
+
+// Update admin
+const updateAdmin = async (req, res) => {
+    const { id } = req.params;
+    const { username, password } = req.body;
+
+    try {
+        // Check if username already exists for other admins
+        const [existingAdmin] = await new Promise((resolve, reject) => {
+            db.query('SELECT * FROM admins WHERE username = ? AND admin_id != ?', [username, id], (err, results) => {
+                if (err) reject(err);
+                resolve(results);
+            });
+        });
+
+        if (existingAdmin) {
+            return res.status(400).json({ message: 'Username already exists' });
+        }
+
+        let sql = 'UPDATE admins SET username = ?';
+        let params = [username];
+
+        // Only update password if it's provided
+        if (password) {
+            const salt = await bcrypt.genSalt(10);
+            const hashedPassword = await bcrypt.hash(password, salt);
+            sql += ', password = ?';
+            params.push(hashedPassword);
+        }
+
+        sql += ' WHERE admin_id = ?';
+        params.push(id);
+
+        db.query(sql, params, (err) => {
+            if (err) {
+                console.error('Database error:', err);
+                return res.status(500).json({ message: 'Error updating admin' });
+            }
+            res.status(200).json({ message: 'Admin updated successfully' });
+        });
+    } catch (error) {
+        console.error('Update error:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+// Delete admin
+const deleteAdmin = (req, res) => {
+    const { id } = req.params;
+    
+    db.query('DELETE FROM admins WHERE id = ?', [id], (err, result) => {
+        if (err) {
+            console.error('Database error:', err);
+            return res.status(500).json({ message: 'Error deleting admin' });
+        }
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'Admin not found' });
+        }
+        res.status(200).json({ message: 'Admin deleted successfully' });
+    });
+};
+
 // Export all functions
 module.exports = {
     loginAdmin,
@@ -513,6 +633,9 @@ module.exports = {
     getAttendanceReports,
     getStudentCountsByYear,
     loginStudent,
-    getStudentData
-
+    getStudentData,
+    getStudentAttendance,
+    getAdmins,
+    updateAdmin,
+    deleteAdmin,
 };

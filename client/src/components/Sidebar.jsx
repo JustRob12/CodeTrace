@@ -8,6 +8,7 @@ import {
   FaUserPlus,
   FaSignOutAlt,
   FaTimes,
+  FaUserCog,
 } from "react-icons/fa";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
@@ -40,6 +41,7 @@ const Sidebar = ({ isExpanded, toggleSidebar }) => {
     { to: "/dashboard", label: "Dashboard", icon: FaHome },
     { to: "/calendar", label: "Calendar", icon: FaCalendarAlt },
     { to: "/register-student", label: "Register Student", icon: FaUserPlus },
+    { to: "/register", label: "Add Admin", icon: FaUserCog },
     { to: "/attendance", label: "Attendance Scanner", icon: FaQrcode },
     { to: "/attendance-report", label: "Attendance Report", icon: FaFileAlt },
     { to: "/semester", label: "Semester", icon: FaCalendarAlt },
@@ -48,10 +50,9 @@ const Sidebar = ({ isExpanded, toggleSidebar }) => {
   return (
     <>
       <div
-        className={`fixed top-0 left-0 h-screen bg-gradient-to-b from-[#064444] to-[#0f8686] transition-all duration-300 ${
+        className={`fixed top-0 left-0 h-screen bg-gradient-to-b from-[#064444] to-[#0f8686] flex flex-col transition-all duration-300 ${
           isExpanded ? "w-64" : "w-20"
         }`}
-        style={{ paddingTop: "60px" }}
       >
         {/* Sidebar Header */}
         <div className="p-4 flex justify-between items-center">
@@ -70,9 +71,9 @@ const Sidebar = ({ isExpanded, toggleSidebar }) => {
           </button>
         </div>
 
-        {/* Navigation Menu */}
-        <nav className="mt-6">
-          <ul className="space-y-2 px-3">
+        {/* Navigation Menu - with max height and scrolling */}
+        <nav className="flex-1 overflow-y-auto">
+          <ul className="space-y-2 px-3 py-4">
             {menuItems.map((item) => (
               <li key={item.to}>
                 <Link
@@ -102,8 +103,8 @@ const Sidebar = ({ isExpanded, toggleSidebar }) => {
           </ul>
         </nav>
 
-        {/* Logout Button */}
-        <div className="absolute bottom-8 left-0 right-0 px-3">
+        {/* Logout Button - fixed at bottom */}
+        <div className="p-3 border-t border-white/10">
           <button
             onClick={handleLogoutClick}
             className={`w-full flex items-center p-3 rounded-xl text-white/90 hover:bg-white/10 transition-all duration-200 ${

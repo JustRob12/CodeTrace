@@ -3,7 +3,7 @@ import jsPDF from "jspdf";
 import "jspdf-autotable";
 import React, { useEffect, useState } from "react";
 import { toast, Toaster } from "react-hot-toast";
-import { FaFileDownload, FaSearch, FaCalendarAlt, FaUserGraduate, FaFilter } from 'react-icons/fa';
+import { FaFileDownload, FaSearch, FaCalendarAlt, FaUserGraduate, FaFilter, FaGraduationCap } from 'react-icons/fa';
 
 const AttendanceReport = () => {
   const [attendanceRecords, setAttendanceRecords] = useState([]);
@@ -166,172 +166,132 @@ const AttendanceReport = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white p-6">
+    <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header Section */}
-        <div className="bg-white/90 backdrop-blur-lg rounded-3xl shadow-2xl overflow-hidden">
-          <div className="relative bg-[#0f8686] pt-8 pb-16">
-            <div className="relative z-10 text-center px-6">
-              <FaFileDownload className="mx-auto text-white/90 text-4xl mb-2" />
+        {/* Filters Section */}
+        <div className="bg-white rounded-lg shadow-md overflow-hidden">
+          <div className="bg-gradient-to-r from-teal-600 to-cyan-600 p-6">
+            <div className="text-center">
+              <FaFilter className="mx-auto text-white/90 text-3xl mb-2" />
               <h2 className="text-2xl font-bold text-white mb-1">
                 Attendance Report
               </h2>
               <p className="text-white/80 text-sm">
-                Generate and export attendance reports
+                Filter and download attendance records
               </p>
-            </div>
-            <div className="absolute bottom-0 left-0 right-0">
-              <svg viewBox="0 0 1440 120" className="w-full h-[60px] fill-white/90">
-                <path d="M0,64L80,69.3C160,75,320,85,480,80C640,75,800,53,960,48C1120,43,1280,53,1360,58.7L1440,64L1440,120L1360,120C1280,120,1120,120,960,120C800,120,640,120,480,120C320,120,160,120,80,120L0,120Z"></path>
-              </svg>
             </div>
           </div>
 
-          {/* Filters Section */}
           <div className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              {/* Search Filter */}
-              <div className="relative">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Search Student ID
-                </label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={searchId}
-                    onChange={handleSearchChange}
-                    placeholder="Enter Student ID"
-                    className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#0f8686] focus:border-transparent transition duration-200"
-                  />
-                  <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                </div>
-              </div>
-
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {/* Event Filter */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <FaCalendarAlt className="inline-block mr-2 text-teal-600" />
                   Select Event
                 </label>
-                <div className="relative">
-                  <select
-                    value={selectedEvent}
-                    onChange={handleEventChange}
-                    className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#0f8686] focus:border-transparent transition duration-200 appearance-none"
-                  >
-                    <option value="">All Events</option>
-                    {events.map((event) => (
-                      <option key={event.id} value={event.id}>
-                        {event.title}
-                      </option>
-                    ))}
-                  </select>
-                  <FaCalendarAlt className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                </div>
+                <select
+                  value={selectedEvent}
+                  onChange={handleEventChange}
+                  className="w-full p-3 border border-teal-100 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition duration-200"
+                >
+                  <option value="">All Events</option>
+                  {events.map((event) => (
+                    <option key={event.id} value={event.id}>
+                      {event.title}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               {/* Year Filter */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <FaGraduationCap className="inline-block mr-2 text-teal-600" />
                   Select Year
                 </label>
-                <div className="relative">
-                  <select
-                    value={selectedYear}
-                    onChange={handleYearChange}
-                    className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#0f8686] focus:border-transparent transition duration-200 appearance-none"
-                  >
-                    <option value="">All Years</option>
-                    {years.map((year, index) => (
-                      <option key={index} value={year}>
-                        {year}
-                      </option>
-                    ))}
-                  </select>
-                  <FaUserGraduate className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                </div>
+                <select
+                  value={selectedYear}
+                  onChange={handleYearChange}
+                  className="w-full p-3 border border-teal-100 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition duration-200"
+                >
+                  <option value="">All Years</option>
+                  {years.map((year) => (
+                    <option key={year} value={year}>
+                      {year}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Student ID Search */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <FaSearch className="inline-block mr-2 text-teal-600" />
+                  Search Student ID
+                </label>
+                <input
+                  type="text"
+                  value={searchId}
+                  onChange={handleSearchChange}
+                  placeholder="Enter Student ID"
+                  className="w-full p-3 border border-teal-100 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition duration-200"
+                />
               </div>
             </div>
 
-            {/* Export Button */}
-            <div className="flex justify-end">
+            {/* Download Button */}
+            <div className="mt-6">
               <button
                 onClick={handleExportPDF}
-                disabled={filteredRecords.length === 0}
-                className={`flex items-center space-x-2 px-6 py-2.5 rounded-xl font-medium transition duration-200 ${
-                  filteredRecords.length === 0
-                    ? 'bg-gray-300 cursor-not-allowed'
-                    : 'bg-[#0f8686] text-white hover:bg-[#0a6565]'
-                }`}
+                className="w-full bg-gradient-to-r from-teal-600 to-cyan-600 text-white py-3 rounded-lg font-medium hover:from-teal-700 hover:to-cyan-700 transition duration-200 flex items-center justify-center space-x-2"
               >
                 <FaFileDownload className="text-lg" />
-                <span>Export PDF</span>
+                <span>Download Report</span>
               </button>
             </div>
           </div>
         </div>
 
-        {/* Records Table */}
-        <div className="bg-white/90 backdrop-blur-lg rounded-3xl shadow-2xl overflow-hidden">
-          <div className="relative bg-[#0f8686] pt-8 pb-16">
-            <div className="relative z-10 text-center px-6">
-              <FaFilter className="mx-auto text-white/90 text-4xl mb-2" />
-              <h2 className="text-2xl font-bold text-white mb-1">
-                Filtered Results
-              </h2>
-              <p className="text-white/80 text-sm">
-                {filteredRecords.length} records found
-              </p>
-            </div>
-            <div className="absolute bottom-0 left-0 right-0">
-              <svg viewBox="0 0 1440 120" className="w-full h-[60px] fill-white/90">
-                <path d="M0,64L80,69.3C160,75,320,85,480,80C640,75,800,53,960,48C1120,43,1280,53,1360,58.7L1440,64L1440,120L1360,120C1280,120,1120,120,960,120C800,120,640,120,480,120C320,120,160,120,80,120L0,120Z"></path>
-              </svg>
-            </div>
-          </div>
-
+        {/* Results Table */}
+        <div className="bg-white rounded-lg shadow-md overflow-hidden">
           <div className="p-6">
             <div className="overflow-x-auto">
               <div className="inline-block min-w-full align-middle">
-                <div className="overflow-hidden rounded-xl shadow-lg">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+                <div className="overflow-hidden rounded-lg border border-teal-100">
+                  <table className="min-w-full divide-y divide-teal-100">
+                    <thead className="bg-teal-50">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">
                           Event
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">
                           Student ID
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">
                           Full Name
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">
                           Year
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">
                           Check-in Time
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">
                           Check-out Time
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="bg-white divide-y divide-teal-100">
                       {filteredRecords.length === 0 ? (
                         <tr>
-                          <td
-                            colSpan="6"
-                            className="px-6 py-4 text-center text-gray-500"
-                          >
+                          <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
                             No attendance records found.
                           </td>
                         </tr>
                       ) : (
                         filteredRecords.map((record, index) => (
-                          <tr
-                            key={index}
-                            className="hover:bg-gray-50 transition-colors"
-                          >
+                          <tr key={index} className="hover:bg-teal-50 transition duration-150">
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                               {getEventTitle(record.event_id)}
                             </td>

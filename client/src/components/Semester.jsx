@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Modal from 'react-modal';
 import axios from 'axios';
 import { FaCalendarAlt, FaClock, FaTimes } from 'react-icons/fa';
+import Swal from 'sweetalert2';
 
 const Semester = () => {
   const [events, setEvents] = useState([]);
@@ -48,28 +49,43 @@ const Semester = () => {
     setSelectedYear(null);
   };
 
-  const setActiveSemester = (year) => {
-    setActiveYear(year);
-    localStorage.setItem('activeYear', year);
+  const setActiveSemester = async (year) => {
+    const result = await Swal.fire({
+      title: 'Activate Semester?',
+      text: `Are you sure you want to set ${year} as the active semester?`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#0f8686',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, activate it!',
+      cancelButtonText: 'Cancel'
+    });
+
+    if (result.isConfirmed) {
+      setActiveYear(year);
+      localStorage.setItem('activeYear', year);
+      
+      await Swal.fire({
+        title: 'Activated!',
+        text: `${year} has been set as the active semester.`,
+        icon: 'success',
+        confirmButtonColor: '#0f8686'
+      });
+    }
   };
 
   return (
-    <div className="min-h-screen bg-white p-6">
+    <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header Section */}
-        <div className="bg-white/90 backdrop-blur-lg rounded-3xl shadow-2xl overflow-hidden mb-6">
-          <div className="relative bg-[#0f8686] pt-8 pb-16">
-            <div className="relative z-10 text-center px-6">
-              <FaCalendarAlt className="mx-auto text-white/90 text-4xl mb-2" />
-              <h1 className="text-3xl font-bold text-white mb-1">Academic Years</h1>
+        <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+          <div className="bg-gradient-to-r from-teal-600 to-cyan-600 p-6">
+            <div className="text-center">
+              <FaCalendarAlt className="mx-auto text-white/90 text-3xl mb-2" />
+              <h1 className="text-2xl font-bold text-white mb-1">Academic Years</h1>
               <p className="text-white/80 text-sm">
                 Manage and view academic year events
               </p>
-            </div>
-            <div className="absolute bottom-0 left-0 right-0">
-              <svg viewBox="0 0 1440 120" className="w-full h-[60px] fill-white/90">
-                <path d="M0,64L80,69.3C160,75,320,85,480,80C640,75,800,53,960,48C1120,43,1280,53,1360,58.7L1440,64L1440,120L1360,120C1280,120,1120,120,960,120C800,120,640,120,480,120C320,120,160,120,80,120L0,120Z"></path>
-              </svg>
             </div>
           </div>
         </div>
@@ -80,19 +96,14 @@ const Semester = () => {
             <div
               key={year}
               onClick={() => openModal(year)}
-              className="bg-white/90 backdrop-blur-lg rounded-2xl shadow-xl overflow-hidden transform transition-all duration-300 hover:scale-105 cursor-pointer"
+              className="bg-white rounded-lg shadow-md overflow-hidden transform transition-all duration-300 hover:shadow-lg hover:-translate-y-1 cursor-pointer"
             >
-              <div className="relative bg-[#0f8686] pt-6 pb-12">
-                <div className="relative z-10 text-center px-4">
-                  <h2 className="text-2xl font-bold text-white mb-1">{year}</h2>
+              <div className="bg-gradient-to-r from-teal-600 to-cyan-600 p-4">
+                <div className="text-center">
+                  <h2 className="text-xl font-bold text-white mb-1">{year}</h2>
                   <p className="text-white/80 text-sm">
                     {groupedEvents[year].length} Events
                   </p>
-                </div>
-                <div className="absolute bottom-0 left-0 right-0">
-                  <svg viewBox="0 0 1440 120" className="w-full h-[40px] fill-white/90">
-                    <path d="M0,64L80,69.3C160,75,320,85,480,80C640,75,800,53,960,48C1120,43,1280,53,1360,58.7L1440,64L1440,120L1360,120C1280,120,1120,120,960,120C800,120,640,120,480,120C320,120,160,120,80,120L0,120Z"></path>
-                  </svg>
                 </div>
               </div>
               <div className="p-4 text-center">
@@ -101,9 +112,9 @@ const Semester = () => {
                     e.stopPropagation();
                     setActiveSemester(year);
                   }}
-                  className={`px-6 py-2 rounded-xl font-medium transition-all duration-200 ${
+                  className={`px-6 py-2 rounded-lg font-medium transition-all duration-200 ${
                     activeYear === year
-                      ? 'bg-[#0f8686] text-white'
+                      ? 'bg-gradient-to-r from-teal-600 to-cyan-600 text-white'
                       : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
                 >
@@ -121,24 +132,19 @@ const Semester = () => {
           className="modal"
           overlayClassName="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
         >
-          <div className="bg-white/90 backdrop-blur-lg rounded-3xl shadow-2xl overflow-hidden w-full max-w-4xl">
-            <div className="relative bg-[#0f8686] pt-8 pb-16">
-              <div className="relative z-10 text-center px-6">
-                <FaClock className="mx-auto text-white/90 text-4xl mb-2" />
+          <div className="bg-white rounded-lg shadow-xl overflow-hidden w-full max-w-4xl">
+            <div className="bg-gradient-to-r from-teal-600 to-cyan-600 p-6">
+              <div className="text-center relative">
+                <FaClock className="mx-auto text-white/90 text-3xl mb-2" />
                 <h2 className="text-2xl font-bold text-white mb-1">
                   {selectedYear} Events
                 </h2>
-              </div>
-              <button
-                onClick={closeModal}
-                className="absolute top-4 right-4 text-white/80 hover:text-white transition-colors"
-              >
-                <FaTimes className="text-2xl" />
-              </button>
-              <div className="absolute bottom-0 left-0 right-0">
-                <svg viewBox="0 0 1440 120" className="w-full h-[60px] fill-white/90">
-                  <path d="M0,64L80,69.3C160,75,320,85,480,80C640,75,800,53,960,48C1120,43,1280,53,1360,58.7L1440,64L1440,120L1360,120C1280,120,1120,120,960,120C800,120,640,120,480,120C320,120,160,120,80,120L0,120Z"></path>
-                </svg>
+                <button
+                  onClick={closeModal}
+                  className="absolute top-0 right-0 text-white/80 hover:text-white transition-colors"
+                >
+                  <FaTimes className="text-2xl" />
+                </button>
               </div>
             </div>
 
@@ -148,22 +154,22 @@ const Semester = () => {
                   groupedEvents[selectedYear].map((event) => (
                     <div
                       key={event.id}
-                      className="bg-white rounded-xl shadow-lg p-4 hover:shadow-xl transition-shadow"
+                      className="bg-white rounded-lg shadow-md border border-teal-100 p-4 hover:shadow-lg transition-shadow"
                     >
-                      <h3 className="text-lg font-bold text-[#0f8686] mb-3">
+                      <h3 className="text-lg font-bold text-teal-700 mb-3">
                         {event.title}
                       </h3>
                       <div className="space-y-2 text-sm">
                         <div>
-                          <p className="text-gray-600 font-medium">Start:</p>
-                          <p>{new Date(event.start).toLocaleDateString()}</p>
+                          <p className="text-teal-600 font-medium">Start:</p>
+                          <p className="text-gray-700">{new Date(event.start).toLocaleDateString()}</p>
                           <p className="text-gray-500">
                             {new Date(event.start).toLocaleTimeString()}
                           </p>
                         </div>
                         <div>
-                          <p className="text-gray-600 font-medium">End:</p>
-                          <p>{new Date(event.end).toLocaleDateString()}</p>
+                          <p className="text-teal-600 font-medium">End:</p>
+                          <p className="text-gray-700">{new Date(event.end).toLocaleDateString()}</p>
                           <p className="text-gray-500">
                             {new Date(event.end).toLocaleTimeString()}
                           </p>

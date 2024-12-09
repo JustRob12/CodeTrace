@@ -4,7 +4,7 @@ import { ArcElement, Chart as ChartJS, Legend, Tooltip } from "chart.js";
 import React, { useEffect, useState } from "react";
 import { Pie } from "react-chartjs-2";
 import CountUp from "react-countup";
-import { FaUserGraduate, FaChartPie, FaCalendarCheck } from 'react-icons/fa';
+import { FaUser, FaChartPie, FaCalendarCheck } from 'react-icons/fa';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -63,22 +63,26 @@ const Dashboard = () => {
     }
   };
 
+  // Update chart colors
   const data = {
     labels: ["1st Year", "2nd Year", "3rd Year", "4th Year"],
-    datasets: [
-      {
-        label: "Student Counts",
-        data: [
-          studentCounts.firstYear,
-          studentCounts.secondYear,
-          studentCounts.thirdYear,
-          studentCounts.fourthYear,
-        ],
-        backgroundColor: ["#18e1e7", "#15b8bc", "#129fa0", "#0f8686"], // Shades of teal
-        borderColor: ["#0f8686", "#0c7575", "#0a6464", "#084c4c"],
-        borderWidth: 1,
-      },
-    ],
+    datasets: [{
+      label: "Student Counts",
+      data: [
+        studentCounts.firstYear,
+        studentCounts.secondYear,
+        studentCounts.thirdYear,
+        studentCounts.fourthYear,
+      ],
+      backgroundColor: [
+        "#FCD34D", // yellow-400 for 1st year
+        "#34D399", // green-400 for 2nd year
+        "#60A5FA", // blue-400 for 3rd year
+        "#F87171", // red-400 for 4th year
+      ],
+      borderColor: ["white"],
+      borderWidth: 2,
+    }],
   };
 
   const options = {
@@ -117,160 +121,98 @@ const Dashboard = () => {
   });
 
   return (
-    <div className="min-h-screen bg-white p-6">
+    <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto space-y-6">
-        {/* Welcome Section with Total Students */}
-        <div className="bg-white/90 backdrop-blur-lg rounded-3xl shadow-2xl overflow-hidden">
-          <div className="relative bg-[#0f8686] pt-8 pb-16">
-            <div className="relative z-10 px-6">
-              <h1 className="text-3xl font-bold text-white mb-2">
-                Welcome to CodeTrace Dashboard
-              </h1>
-              <p className="text-white/80">
-                Manage student data and events efficiently
-              </p>
+        {/* Header Section */}
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h1 className="text-2xl font-bold text-teal-700">CodeTrace Dashboard</h1>
+              <p className="text-gray-600">Manage student data and events efficiently</p>
             </div>
-            <div className="absolute bottom-0 left-0 right-0">
-              <svg viewBox="0 0 1440 120" className="w-full h-[60px] fill-white/90">
-                <path d="M0,64L80,69.3C160,75,320,85,480,80C640,75,800,53,960,48C1120,43,1280,53,1360,58.7L1440,64L1440,120L1360,120C1280,120,1120,120,960,120C800,120,640,120,480,120C320,120,160,120,80,120L0,120Z"></path>
-              </svg>
-            </div>
-          </div>
-
-          {/* Total Students Card */}
-          <div className="p-6">
-            <div className="bg-gradient-to-br from-[#064444] to-[#0f8686] rounded-2xl shadow-lg p-6">
-              <div className="flex items-center justify-between">
+            <div className="bg-teal-50 p-4 rounded-lg border border-teal-100">
+              <div className="flex items-center gap-4">
+                <FaUser className="text-teal-600 text-3xl" />
                 <div>
-                  <p className="text-white/80 text-lg mb-2">Total Students</p>
-                  <h2 className="text-4xl font-bold text-white">
+                  <p className="text-sm text-teal-600">Total Students</p>
+                  <span className="text-2xl font-bold text-teal-700">
                     <CountUp start={0} end={totalStudents} duration={2} separator="," />
-                  </h2>
+                  </span>
                 </div>
-                <FaUserGraduate className="text-white/80 text-5xl" />
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Year-wise Statistics Section */}
-        <div className="bg-white/90 backdrop-blur-lg rounded-3xl shadow-2xl overflow-hidden">
-          <div className="relative bg-[#0f8686] pt-8 pb-16">
-            <div className="relative z-10 px-6">
-              <h2 className="text-2xl font-bold text-white mb-2">
-                Year-wise Distribution
-              </h2>
-              <p className="text-white/80">
-                Student count by academic year
-              </p>
-            </div>
-            <div className="absolute bottom-0 left-0 right-0">
-              <svg viewBox="0 0 1440 120" className="w-full h-[60px] fill-white/90">
-                <path d="M0,64L80,69.3C160,75,320,85,480,80C640,75,800,53,960,48C1120,43,1280,53,1360,58.7L1440,64L1440,120L1360,120C1280,120,1120,120,960,120C800,120,640,120,480,120C320,120,160,120,80,120L0,120Z"></path>
-              </svg>
-            </div>
-          </div>
-
-          <div className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              {Object.entries(studentCounts).map(([key, value], index) => {
-                const colors = [
-                  "from-[#18e1e7] to-[#15b8bc]",
-                  "from-[#15b8bc] to-[#129fa0]",
-                  "from-[#129fa0] to-[#0f8686]",
-                  "from-[#0f8686] to-[#064444]",
-                ];
-                const yearLabels = {
-                  firstYear: "1st Year",
-                  secondYear: "2nd Year",
-                  thirdYear: "3rd Year",
-                  fourthYear: "4th Year"
-                };
-                return (
-                  <div key={key} className={`bg-gradient-to-br ${colors[index]} p-6 rounded-2xl shadow-lg`}>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-white/80 text-sm mb-1">
-                          {yearLabels[key]} Students
-                        </p>
-                        <h2 className="text-3xl font-bold text-white">
-                          <CountUp start={0} end={value} duration={1.5} />
-                        </h2>
-                      </div>
-                      <FaUserGraduate className="text-white/80 text-3xl" />
-                    </div>
+          {/* Year-wise Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {Object.entries(studentCounts).map(([key, value]) => {
+              const yearLabels = {
+                firstYear: "1st Year",
+                secondYear: "2nd Year",
+                thirdYear: "3rd Year",
+                fourthYear: "4th Year"
+              };
+              return (
+                <div key={key} 
+                     className="bg-gradient-to-r from-teal-500/10 to-cyan-500/10 p-4 rounded-lg border border-teal-100">
+                  <p className="text-teal-600 text-sm font-medium">{yearLabels[key]}</p>
+                  <div className="flex items-center justify-between mt-2">
+                    <span className="text-xl font-bold text-teal-700">
+                      <CountUp start={0} end={value} duration={1.5} />
+                    </span>
+                    <FaUser className="text-teal-500 text-xl" />
                   </div>
-                );
-              })}
-            </div>
+                </div>
+              );
+            })}
           </div>
         </div>
 
-        {/* Chart and Events Section */}
+        {/* Charts and Events Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Pie Chart */}
-          <div className="bg-white/90 backdrop-blur-lg rounded-3xl shadow-2xl overflow-hidden">
-            <div className="relative bg-[#0f8686] pt-8 pb-16">
-              <div className="relative z-10 text-center">
-                <FaChartPie className="mx-auto text-white/90 text-3xl mb-2" />
-                <h2 className="text-2xl font-bold text-white">Student Distribution</h2>
-              </div>
-              <div className="absolute bottom-0 left-0 right-0">
-                <svg viewBox="0 0 1440 120" className="w-full h-[60px] fill-white/90">
-                  <path d="M0,64L80,69.3C160,75,320,85,480,80C640,75,800,53,960,48C1120,43,1280,53,1360,58.7L1440,64L1440,120L1360,120C1280,120,1120,120,960,120C800,120,640,120,480,120C320,120,160,120,80,120L0,120Z"></path>
-                </svg>
-              </div>
+          {/* Chart Section */}
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <div className="flex items-center gap-2 mb-6 pb-4 border-b border-teal-100">
+              <FaChartPie className="text-teal-600" />
+              <h2 className="text-xl font-bold text-teal-700">Student Distribution</h2>
             </div>
-            <div className="p-6">
-              <div className="h-[300px] flex items-center justify-center">
-                <Pie data={data} options={options} />
-              </div>
+            <div className="h-[300px]">
+              <Pie data={data} options={options} />
             </div>
           </div>
 
           {/* Events Section */}
-          <div className="bg-white/90 backdrop-blur-lg rounded-3xl shadow-2xl overflow-hidden">
-            <div className="relative bg-[#0f8686] pt-8 pb-16">
-              <div className="relative z-10 text-center">
-                <FaCalendarCheck className="mx-auto text-white/90 text-3xl mb-2" />
-                <h2 className="text-2xl font-bold text-white">
-                  {activeYear ? `${activeYear} Events` : 'No Active Semester Selected'}
-                </h2>
-              </div>
-              <div className="absolute bottom-0 left-0 right-0">
-                <svg viewBox="0 0 1440 120" className="w-full h-[60px] fill-white/90">
-                  <path d="M0,64L80,69.3C160,75,320,85,480,80C640,75,800,53,960,48C1120,43,1280,53,1360,58.7L1440,64L1440,120L1360,120C1280,120,1120,120,960,120C800,120,640,120,480,120C320,120,160,120,80,120L0,120Z"></path>
-                </svg>
-              </div>
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <div className="flex items-center gap-2 mb-6 pb-4 border-b border-teal-100">
+              <FaCalendarCheck className="text-teal-600" />
+              <h2 className="text-xl font-bold text-teal-700">
+                {activeYear ? `${activeYear} Events` : 'No Active Semester Selected'}
+              </h2>
             </div>
-            <div className="p-6">
-              <div className="space-y-4 max-h-[300px] overflow-y-auto">
-                {activeYear && groupedEvents[activeYear]?.map((event) => (
-                  <div
-                    key={event.id}
-                    className="bg-white/80 p-4 rounded-xl shadow-md hover:shadow-lg transition-all duration-200"
-                  >
-                    <h3 className="font-bold text-lg text-[#0f8686] mb-2">{event.title}</h3>
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div>
-                        <p className="text-gray-600 font-medium">Start:</p>
-                        <p>{new Date(event.start).toLocaleDateString()}</p>
-                        <p className="text-gray-500">{new Date(event.start).toLocaleTimeString()}</p>
-                      </div>
-                      <div>
-                        <p className="text-gray-600 font-medium">End:</p>
-                        <p>{new Date(event.end).toLocaleDateString()}</p>
-                        <p className="text-gray-500">{new Date(event.end).toLocaleTimeString()}</p>
-                      </div>
+            <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2">
+              {activeYear && groupedEvents[activeYear]?.map((event) => (
+                <div key={event.id} 
+                     className="bg-gradient-to-r from-teal-50 to-cyan-50 p-4 rounded-lg border border-teal-100 hover:shadow-md transition-shadow">
+                  <h3 className="font-semibold text-teal-700 mb-2">{event.title}</h3>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <p className="text-teal-600 font-medium">Start:</p>
+                      <p className="text-gray-700">{new Date(event.start).toLocaleDateString()}</p>
+                      <p className="text-gray-500">{new Date(event.start).toLocaleTimeString()}</p>
+                    </div>
+                    <div>
+                      <p className="text-teal-600 font-medium">End:</p>
+                      <p className="text-gray-700">{new Date(event.end).toLocaleDateString()}</p>
+                      <p className="text-gray-500">{new Date(event.end).toLocaleTimeString()}</p>
                     </div>
                   </div>
-                ))}
-                {(!activeYear || !groupedEvents[activeYear]) && (
-                  <div className="text-center text-gray-500 py-4">
-                    {activeYear ? 'No events found for this semester.' : 'Please select an active semester to view events.'}
-                  </div>
-                )}
-              </div>
+                </div>
+              ))}
+              {(!activeYear || !groupedEvents[activeYear]) && (
+                <div className="text-center text-gray-500 py-4">
+                  {activeYear ? 'No events found for this semester.' : 'Please select an active semester to view events.'}
+                </div>
+              )}
             </div>
           </div>
         </div>

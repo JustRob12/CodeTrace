@@ -123,92 +123,84 @@ const AttendanceScanner = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white p-6">
+    <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Scanner Section */}
           <div className="lg:col-span-1">
-            <div className="bg-white/90 backdrop-blur-lg rounded-3xl shadow-2xl overflow-hidden">
-              <div className="relative bg-[#0f8686] pt-8 pb-16">
-                <div className="relative z-10 text-center px-6">
-                  <FaQrcode className="mx-auto text-white/90 text-4xl mb-2" />
+            <div className="bg-white rounded-lg shadow-md overflow-hidden">
+              <div className="bg-gradient-to-r from-teal-600 to-cyan-600 p-6">
+                <div className="text-center">
+                  <FaQrcode className="mx-auto text-white/90 text-3xl mb-2" />
                   <h2 className="text-2xl font-bold text-white mb-1">
-                    Attendance Scanner
+                    QR Scanner
                   </h2>
                   <p className="text-white/80 text-sm">
-                    Scan QR codes for attendance
+                    Scan student QR codes for attendance
                   </p>
-                </div>
-                <div className="absolute bottom-0 left-0 right-0">
-                  <svg viewBox="0 0 1440 120" className="w-full h-[60px] fill-white/90">
-                    <path d="M0,64L80,69.3C160,75,320,85,480,80C640,75,800,53,960,48C1120,43,1280,53,1360,58.7L1440,64L1440,120L1360,120C1280,120,1120,120,960,120C800,120,640,120,480,120C320,120,160,120,80,120L0,120Z"></path>
-                  </svg>
                 </div>
               </div>
 
-              <div className="p-6">
-                <div className="space-y-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Select Event
-                    </label>
-                    <select
-                      value={selectedEvent}
-                      onChange={handleEventChange}
-                      className="w-full px-4 py-2.5 border border-gray-300 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#0f8686] focus:border-transparent transition duration-200"
-                    >
-                      <option value="" disabled>
-                        -- Select an Event --
+              <div className="p-6 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Select Event
+                  </label>
+                  <select
+                    value={selectedEvent}
+                    onChange={handleEventChange}
+                    className="w-full p-3 border border-teal-100 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition duration-200"
+                  >
+                    <option value="">Select an event</option>
+                    {events.map((event) => (
+                      <option key={event.id} value={event.id}>
+                        {event.title}
                       </option>
-                      {events.map((event) => (
-                        <option key={event.id} value={event.id}>
-                          {event.title}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                    ))}
+                  </select>
+                </div>
 
-                  {selectedEvent && scannerActive && (
-                    <div className="rounded-xl overflow-hidden shadow-lg">
+                {selectedEvent && (
+                  <div className="space-y-4">
+                    <div className="bg-gray-50 rounded-lg overflow-hidden">
                       <QrReader
-                        onResult={(result, error) => {
-                          if (result) handleScan(result);
-                          if (error?.name !== "NotFoundError") console.error(error);
-                        }}
-                        className="w-full"
+                        onResult={handleScan}
                         constraints={{ facingMode: "environment" }}
+                        className="w-full"
                       />
                     </div>
-                  )}
 
-                  {scanStatus && (
-                    <div
-                      className={`p-3 rounded-xl text-white text-center font-medium ${
-                        scanStatus === "Success!" ? "bg-green-500" : "bg-[#0f8686]"
-                      }`}
+                    {scanStatus && (
+                      <div
+                        className={`p-3 rounded-lg text-white text-center font-medium ${
+                          scanStatus === "Success!" 
+                            ? "bg-gradient-to-r from-green-500 to-green-600" 
+                            : "bg-gradient-to-r from-teal-600 to-cyan-600"
+                        }`}
+                      >
+                        {scanStatus}
+                      </div>
+                    )}
+
+                    <button
+                      onClick={handleCloseScanner}
+                      className="w-full bg-red-500 text-white py-2.5 rounded-lg font-medium hover:bg-red-600 transition duration-200 flex items-center justify-center space-x-2"
                     >
-                      {scanStatus}
-                    </div>
-                  )}
-
-                  <button
-                    onClick={handleCloseScanner}
-                    className="w-full bg-red-500 text-white py-2.5 rounded-xl font-medium hover:bg-red-600 transition duration-200 flex items-center justify-center space-x-2"
-                  >
-                    <FaUserCheck className="text-lg" />
-                    <span>Close Scanner</span>
-                  </button>
-                </div>
+                      <FaUserCheck className="text-lg" />
+                      <span>Close Scanner</span>
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
 
           {/* Check-in Records Section */}
           <div className="lg:col-span-2">
-            <div className="bg-white/90 backdrop-blur-lg rounded-3xl shadow-2xl overflow-hidden">
-              <div className="relative bg-[#0f8686] pt-8 pb-16">
-                <div className="relative z-10 text-center px-6">
-                  <FaHistory className="mx-auto text-white/90 text-4xl mb-2" />
+            <div className="bg-white rounded-lg shadow-md overflow-hidden">
+              <div className="bg-gradient-to-r from-teal-600 to-cyan-600 p-6">
+                <div className="text-center">
+                  <FaHistory className="mx-auto text-white/90 text-3xl mb-2" />
                   <h2 className="text-2xl font-bold text-white mb-1">
                     Check-in Records
                   </h2>
@@ -216,38 +208,33 @@ const AttendanceScanner = () => {
                     View attendance history
                   </p>
                 </div>
-                <div className="absolute bottom-0 left-0 right-0">
-                  <svg viewBox="0 0 1440 120" className="w-full h-[60px] fill-white/90">
-                    <path d="M0,64L80,69.3C160,75,320,85,480,80C640,75,800,53,960,48C1120,43,1280,53,1360,58.7L1440,64L1440,120L1360,120C1280,120,1120,120,960,120C800,120,640,120,480,120C320,120,160,120,80,120L0,120Z"></path>
-                  </svg>
-                </div>
               </div>
 
               <div className="p-6">
                 <div className="overflow-x-auto">
                   <div className="inline-block min-w-full align-middle">
-                    <div className="overflow-hidden rounded-xl shadow-lg">
-                      <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
+                    <div className="overflow-hidden rounded-lg border border-teal-100">
+                      <table className="min-w-full divide-y divide-teal-100">
+                        <thead className="bg-teal-50">
                           <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th className="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">
                               Student ID
                             </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th className="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">
                               Name
                             </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th className="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">
                               Year
                             </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th className="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">
                               Check-in
                             </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th className="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">
                               Check-out
                             </th>
                           </tr>
                         </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
+                        <tbody className="bg-white divide-y divide-teal-100">
                           {checkInRecords.length === 0 ? (
                             <tr>
                               <td colSpan="5" className="px-6 py-4 text-center text-gray-500">
@@ -256,7 +243,7 @@ const AttendanceScanner = () => {
                             </tr>
                           ) : (
                             checkInRecords.map((record, index) => (
-                              <tr key={index} className="hover:bg-gray-50">
+                              <tr key={index} className="hover:bg-teal-50 transition duration-150">
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                   {record.studentId}
                                 </td>

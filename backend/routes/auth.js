@@ -16,7 +16,11 @@ const {
     getAttendanceReports,
     getStudentCountsByYear,
     loginStudent,
-    getStudentData
+    getStudentData,
+    getStudentAttendance,
+    getAdmins,
+    updateAdmin,
+    deleteAdmin
 } = require('../controllers/controller');
 
 const router = express.Router();
@@ -67,5 +71,12 @@ router.get('/counts', getStudentCountsByYear);
 
 router.post('/login/student', loginStudent);
 router.get('/student/:studentId', getStudentData);
+
+// Add this new route
+router.get('/student/attendance/:studentId', getStudentAttendance);
+
+router.get('/admins', getAdmins);
+router.put('/admin/:id', updateAdmin);
+router.delete('/admin/:id', deleteAdmin);
 
 module.exports = router;

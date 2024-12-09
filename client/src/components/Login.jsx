@@ -3,6 +3,7 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaUser, FaLock, FaFingerprint } from 'react-icons/fa';
+import background from '../assets/background.jpg';
 
 const Login = () => {
   const [username, setUsername] = useState("");
@@ -47,8 +48,19 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#18e1e7] to-[#0f8686] p-4">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center relative">
+      {/* Background Image with Overlay */}
+      <div className="absolute inset-0 z-0">
+        <div className="absolute inset-0 bg-gradient-to-br from-[#18e1e7] to-[#0f8686] opacity-90"></div>
+        <img 
+          src={background} 
+          alt="background" 
+          className="w-full h-full object-cover opacity-20"
+        />
+      </div>
+
+      {/* Main Content */}
+      <div className="w-full max-w-md relative z-10 p-4">
         {/* Glass-like card effect */}
         <div className="bg-white/90 backdrop-blur-lg rounded-3xl shadow-2xl overflow-hidden">
           {/* Header with wave design */}
