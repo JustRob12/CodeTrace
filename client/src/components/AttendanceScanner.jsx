@@ -28,7 +28,8 @@ const AttendanceScanner = () => {
   const fetchCheckInRecords = async () => {
     try {
       const response = await axios.get("http://localhost:5000/api/auth/attendance");
-      setCheckInRecords(swapFirstAndLast(response.data));
+      const sortedRecords = response.data.sort((a, b) => new Date(b.checkInTime) - new Date(a.checkInTime));
+      setCheckInRecords(sortedRecords);
     } catch (error) {
       toast.error("Error fetching check-in records.");
     }

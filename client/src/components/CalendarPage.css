@@ -150,6 +150,7 @@
 
 /* Style today's date in the calendar */
 .fc .fc-day-today {
-  background-color: rgba(13, 148, 136, 0.05) !important;
-  border: 2px solid #74f0e5 !important;
+  background-color: rgba(0, 202, 182, 0.534) !important;
+
+
 }

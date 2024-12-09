@@ -102,10 +102,17 @@ const Dashboard = () => {
     },
   };
 
-  // Group events by academic year
+  // Group events by academic year starting in August
   const groupedEvents = events.reduce((acc, event) => {
-    const startYear = new Date(event.start).getFullYear();
-    const academicYear = `${startYear}-${startYear + 1}`;
+    const eventDate = new Date(event.start);
+    const eventMonth = eventDate.getMonth(); // 0-11 where 0 is January
+    const eventYear = eventDate.getFullYear();
+    
+    // If month is August (7) or later, use current year as start of academic year
+    // If month is before August, use previous year as start of academic year
+    const academicStartYear = eventMonth >= 7 ? eventYear : eventYear - 1;
+    const academicYear = `${academicStartYear}-${academicStartYear + 1}`;
+    
     if (!acc[academicYear]) {
       acc[academicYear] = [];
     }
