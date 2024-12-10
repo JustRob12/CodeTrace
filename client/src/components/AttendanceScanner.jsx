@@ -23,7 +23,7 @@ const AttendanceScanner = () => {
   useEffect(() => {
     fetchEvents();
     fetchCheckInRecords();
-  }, []);
+  }, [activeYear]);
 
   const fetchCheckInRecords = async () => {
     try {
@@ -37,10 +37,21 @@ const AttendanceScanner = () => {
 
   const fetchEvents = async () => {
     try {
+      if (!activeYear) {
+        setEvents([]);
+        return;
+      }
       const response = await axios.get("http://localhost:5000/api/auth/events");
       const filteredEvents = response.data.filter(event => {
-        const startYear = new Date(event.start).getFullYear();
-        const academicYear = `${startYear}-${startYear + 1}`;
+        const eventDate = new Date(event.start);
+        const eventMonth = eventDate.getMonth(); // 0-11 where 0 is January
+        const eventYear = eventDate.getFullYear();
+        
+        // If month is August (7) or later, use current year as start of academic year
+        // If month is before August, use previous year as start of academic year
+        const academicStartYear = eventMonth >= 7 ? eventYear : eventYear - 1;
+        const academicYear = `${academicStartYear}-${academicStartYear + 1}`;
+        
         return academicYear === activeYear;
       });
       setEvents(filteredEvents);
@@ -163,14 +174,14 @@ const AttendanceScanner = () => {
                     ) : events.length === 0 ? (
                       <option value="">No events in active semester</option>
                     ) : (
-                      <>
+                      < >
                         <option value="">Select an event</option>
                         {events.map((event) => (
                           <option key={event.id} value={event.id}>
                             {event.title}
                           </option>
                         ))}
-                      </>
+                      </ >
                     )}
                   </select>
                 </div>

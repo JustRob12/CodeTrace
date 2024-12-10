@@ -20,7 +20,8 @@ const {
     getStudentAttendance,
     getAdmins,
     updateAdmin,
-    deleteAdmin
+    deleteAdmin,
+    changeStudentPassword
 } = require('../controllers/controller');
 
 const router = express.Router();
@@ -78,5 +79,8 @@ router.get('/student/attendance/:studentId', getStudentAttendance);
 router.get('/admins', getAdmins);
 router.put('/admin/:id', updateAdmin);
 router.delete('/admin/:id', deleteAdmin);
+
+// Add this new route for changing password
+router.post('/change-password', changeStudentPassword);
 
 module.exports = router;

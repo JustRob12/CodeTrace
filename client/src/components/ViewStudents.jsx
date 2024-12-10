@@ -294,10 +294,7 @@ const ViewStudents = () => {
                                                     <label className="text-xs text-gray-500">Username</label>
                                                     <p className="font-medium">{selectedStudent.studentId}</p>
                                                 </div>
-                                                <div>
-                                                    <label className="text-xs text-gray-500">Password</label>
-                                                    <p className="font-medium">{selectedStudent.credentials?.password || 'Not set'}</p>
-                                                </div>
+                                                
                                             </div>
                                         </div>
                                     </div>

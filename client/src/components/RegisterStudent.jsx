@@ -1,8 +1,8 @@
 import axios from "axios";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { FaUser, FaIdCard, FaGraduationCap, FaPhone, FaEnvelope, FaUserPlus } from "react-icons/fa";
+import { FaUser, FaIdCard, FaGraduationCap, FaPhone, FaEnvelope, FaUserPlus, FaLock } from "react-icons/fa";
 import ViewStudents from "./ViewStudents";
 
 const RegisterStudent = () => {
@@ -15,10 +15,23 @@ const RegisterStudent = () => {
     section: "",
     contactNumber: "",
     gmail: "",
+    password: "",
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+
+  useEffect(() => {
+    generateOneTimePassword();
+  }, []);
+
+  const generateOneTimePassword = () => {
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    setFormData(prev => ({
+      ...prev,
+      password: otp
+    }));
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -45,6 +58,10 @@ const RegisterStudent = () => {
       );
 
       toast.success("Student Added Successfully!");
+      toast.info(`One-time password: ${formData.password}`, {
+        autoClose: false,
+        closeOnClick: false,
+      });
 
       setFormData({
         lastname: "",
@@ -55,7 +72,9 @@ const RegisterStudent = () => {
         section: "",
         contactNumber: "",
         gmail: "",
+        password: "",
       });
+
     } catch (error) {
       console.error("Error registering student:", error);
       toast.error(
@@ -224,6 +243,23 @@ const RegisterStudent = () => {
                     />
                     <FaEnvelope className="absolute left-3 top-1/2 -translate-y-1/2 text-teal-500" />
                   </div>
+                </div>
+              </div>
+
+              {/* One-Time Password */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">One-Time Password</label>
+                <div className="relative">
+                  <input
+                    type="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    required
+                    className="pl-10 w-full p-3 border border-teal-100 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition duration-200"
+                    placeholder="Enter one-time password"
+                  />
+                  <FaLock className="absolute left-3 top-1/2 -translate-y-1/2 text-teal-500" />
                 </div>
               </div>
 

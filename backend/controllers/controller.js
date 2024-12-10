@@ -121,10 +121,10 @@ const registerAdmin = async (req, res) => {
 
 // Student Registration Logic
 const registerStudent = (req, res) => {
-    const { lastname, firstname, middlename, studentId, year, section, contactNumber, gmail } = req.body;
+    const { lastname, firstname, middlename, studentId, year, section, contactNumber, gmail, password } = req.body;
     const responses = [];
 
-    if (!lastname || !firstname || !studentId || !year || !section || !contactNumber || !gmail) {
+    if (!lastname || !firstname || !studentId || !year || !section || !contactNumber || !gmail || !password) {
         responses.push({ message: 'All fields are required' });
         return res.status(400).json(responses);
     }
@@ -145,11 +145,8 @@ const registerStudent = (req, res) => {
             }
 
             try {
-                // Generate password
-                const generatedPassword = generatePassword({ firstname, studentId, year });
-                
-                // Encrypt the password
-                const encryptedPassword = encrypt(generatedPassword);
+                // Encrypt the one-time password
+                const encryptedPassword = encrypt(password);
 
                 // First, insert into students table
                 db.query(
@@ -162,9 +159,9 @@ const registerStudent = (req, res) => {
                             return res.status(500).json(responses);
                         }
 
-                        // Then, insert into student_accounts table
+                        // Then, insert into student_accounts table with isFirstLogin set to true
                         db.query(
-                            'INSERT INTO student_accounts (studentId, username, password) VALUES (?, ?, ?)',
+                            'INSERT INTO student_accounts (studentId, username, password, isFirstLogin) VALUES (?, ?, ?, TRUE)',
                             [studentId, studentId, encryptedPassword],
                             (accountErr) => {
                                 if (accountErr) {
@@ -177,7 +174,7 @@ const registerStudent = (req, res) => {
                                     message: 'Student registered successfully',
                                     credentials: {
                                         username: studentId,
-                                        password: generatedPassword // Send the unencrypted password in response
+                                        password: password // Send back the original one-time password
                                     }
                                 });
                                 res.status(201).json(responses);
@@ -187,7 +184,7 @@ const registerStudent = (req, res) => {
                 );
             } catch (error) {
                 console.error('Registration error:', error);
-                responses.push({ message: 'Error registering student' });
+                responses.push({ message: 'Server error' });
                 res.status(500).json(responses);
             }
         }
@@ -449,35 +446,63 @@ const getStudentCountsByYear = (req, res) => {
 };
 
 // Student Login Logic
-const loginStudent = (req, res) => {
+const loginStudent = async (req, res) => {
     const { username, password } = req.body;
-    db.query(
-        'SELECT s.*, sa.password as encrypted_password FROM students s JOIN student_accounts sa ON s.studentId = sa.studentId WHERE sa.username = ?',
-        [username],
-        (err, results) => {
-            if (err) return res.status(500).json({ message: 'Database error' });
-            if (results.length === 0) return res.status(401).json({ message: 'Invalid credentials' });
 
-            const student = results[0];
-            const decryptedPassword = decrypt(student.encrypted_password);
-            
-            if (password !== decryptedPassword) {
-                return res.status(401).json({ message: 'Invalid credentials' });
-            }
-
-            const token = jwt.sign(
-                { id: student.studentId, type: 'student' },
-                process.env.JWT_SECRET,
-                { expiresIn: '1h' }
+    try {
+        // Get student account
+        const [account] = await new Promise((resolve, reject) => {
+            db.query(
+                'SELECT * FROM student_accounts WHERE username = ?',
+                [username],
+                (err, results) => {
+                    if (err) reject(err);
+                    resolve(results);
+                }
             );
-            
-            res.json({ 
-                token,
-                userType: 'student',
-                studentId: student.studentId
-            });
+        });
+
+        if (!account) {
+            return res.status(401).json({ message: 'Invalid credentials' });
         }
-    );
+
+        // Decrypt stored password
+        const decryptedPassword = decrypt(account.password);
+        
+        // Compare passwords
+        if (password !== decryptedPassword) {
+            return res.status(401).json({ message: 'Invalid credentials' });
+        }
+
+        // Get student details
+        const [student] = await new Promise((resolve, reject) => {
+            db.query(
+                'SELECT * FROM students WHERE studentId = ?',
+                [username],
+                (err, results) => {
+                    if (err) reject(err);
+                    resolve(results);
+                }
+            );
+        });
+
+        // Generate token
+        const token = jwt.sign(
+            { studentId: student.studentId },
+            process.env.JWT_SECRET || 'your-secret-key',
+            { expiresIn: '1d' }
+        );
+
+        res.json({
+            token,
+            studentId: student.studentId,
+            isFirstLogin: account.isFirstLogin
+        });
+
+    } catch (error) {
+        console.error('Login error:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
 };
 
 // Get Student Data
@@ -616,6 +641,33 @@ const deleteAdmin = (req, res) => {
     });
 };
 
+// Add new function to change password
+const changeStudentPassword = async (req, res) => {
+    const { studentId, newPassword } = req.body;
+
+    try {
+        // Hash the new password
+        const encryptedPassword = encrypt(newPassword);
+
+        // Update password and set isFirstLogin to false
+        await new Promise((resolve, reject) => {
+            db.query(
+                'UPDATE student_accounts SET password = ?, isFirstLogin = FALSE WHERE studentId = ?',
+                [encryptedPassword, studentId],
+                (err, results) => {
+                    if (err) reject(err);
+                    resolve(results);
+                }
+            );
+        });
+
+        res.json({ message: 'Password changed successfully' });
+    } catch (error) {
+        console.error('Password change error:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
 // Export all functions
 module.exports = {
     loginAdmin,
@@ -638,4 +690,5 @@ module.exports = {
     getAdmins,
     updateAdmin,
     deleteAdmin,
+    changeStudentPassword,
 };
