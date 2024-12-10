@@ -668,6 +668,32 @@ const changeStudentPassword = async (req, res) => {
     }
 };
 
+const forgotPassword = async (req, res) => {
+    const { studentId, newPassword } = req.body;
+
+    try {
+        // Encrypt the new password
+        const encryptedPassword = encrypt(newPassword);
+
+        // Update the password in the database
+        await new Promise((resolve, reject) => {
+            db.query(
+                'UPDATE student_accounts SET password = ?, isFirstLogin = TRUE WHERE studentId = ?',
+                [encryptedPassword, studentId],
+                (err, results) => {
+                    if (err) reject(err);
+                    resolve(results);
+                }
+            );
+        });
+
+        res.json({ message: 'Password reset successfully' });
+    } catch (error) {
+        console.error('Password reset error:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
 // Export all functions
 module.exports = {
     loginAdmin,
@@ -691,4 +717,5 @@ module.exports = {
     updateAdmin,
     deleteAdmin,
     changeStudentPassword,
+    forgotPassword,
 };

@@ -21,7 +21,8 @@ const {
     getAdmins,
     updateAdmin,
     deleteAdmin,
-    changeStudentPassword
+    changeStudentPassword,
+    forgotPassword
 } = require('../controllers/controller');
 
 const router = express.Router();
@@ -82,5 +83,8 @@ router.delete('/admin/:id', deleteAdmin);
 
 // Add this new route for changing password
 router.post('/change-password', changeStudentPassword);
+
+// Add this new route for forgot password
+router.post('/forgot-password', forgotPassword);
 
 module.exports = router;

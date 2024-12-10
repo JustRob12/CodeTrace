@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { toPng } from 'html-to-image';
 import React, { useEffect, useState } from 'react';
-import { FaEdit, FaQrcode, FaTrashAlt, FaUserCircle, FaSearch, FaGraduationCap } from 'react-icons/fa';
+import { FaEdit, FaQrcode, FaTrashAlt, FaUserCircle, FaSearch, FaGraduationCap, FaKey } from 'react-icons/fa';
 import QRCode from 'react-qr-code';
 import EditStudentModal from './EditStudentModal';
 import Swal from 'sweetalert2';
@@ -133,6 +133,50 @@ const ViewStudents = () => {
             });
     };
 
+    const handleForgotPassword = async (studentId) => {
+        try {
+            // Generate a new OTP using the student's information
+            const student = selectedStudent;
+            const namePart = student.firstname.substring(0, 2).toUpperCase();
+            const idPart = student.studentId.slice(-4);
+            const yearPart = student.year;
+            const randomPart = Math.random().toString(36).substring(2, 5).toUpperCase();
+            const newPassword = `${namePart}${idPart}${yearPart}${randomPart}`;
+
+            // Send request to update password
+            await axios.post('http://localhost:5000/api/auth/forgot-password', {
+                studentId: student.studentId,
+                newPassword: newPassword
+            });
+
+            // Show success message with the new password
+            await Swal.fire({
+                title: 'Password Reset!',
+                html: `
+                    <div class="text-left">
+                        <p class="mb-2">New password for ${student.firstname} ${student.lastname}:</p>
+                        <div class="bg-gray-100 p-3 rounded">
+                            <code class="text-lg font-mono">${newPassword}</code>
+                        </div>
+                        <p class="mt-2 text-sm text-gray-600">Make sure to copy this password and share it with the student.</p>
+                    </div>
+                `,
+                icon: 'success',
+                confirmButtonColor: '#0f8686'
+            });
+
+            // Refresh the student list
+            window.location.reload();
+        } catch (error) {
+            Swal.fire({
+                title: 'Error!',
+                text: 'Failed to reset password.',
+                icon: 'error',
+                confirmButtonColor: '#0f8686'
+            });
+        }
+    };
+
     const filteredStudents = students.filter(student => {
         const searchTerm = searchQuery.toLowerCase();
         const matchesSearch = 
@@ -258,6 +302,14 @@ const ViewStudents = () => {
                                                 title="Generate QR Code"
                                             >
                                                 <FaQrcode />
+                                            </button>
+                                  
+                                            <button
+                                                onClick={() => handleForgotPassword(selectedStudent.studentId)}
+                                                className="p-2 text-yellow-600 hover:bg-yellow-50 rounded-lg transition-colors"
+                                                title="Forgot Password"
+                                            >
+                                                <FaKey />
                                             </button>
                                         </div>
                                     </div>
