@@ -6,39 +6,65 @@ import { FaUser, FaLock, FaUserCog, FaUserShield, FaEdit, FaTrash } from 'react-
 import Swal from 'sweetalert2';
 
 const Register = () => {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const [formData, setFormData] = useState({
+    studentId: "",
+    firstName: "",
+    middleName: "",
+    lastName: "",
+    position: "",
+    username: "",
+    password: ""
+  });
   const [admins, setAdmins] = useState([]);
   const [editingAdmin, setEditingAdmin] = useState(null);
-  const navigate = useNavigate();
 
-  useEffect(() => {
-    fetchAdmins();
-  }, []);
+  const positions = ["President", "Vice-President", "Secretary"];
 
-  const fetchAdmins = async () => {
-    try {
-      const response = await axios.get("http://localhost:5000/api/auth/admins");
-      console.log('Fetched admins:', response.data);
-      setAdmins(response.data);
-    } catch (error) {
-      console.error('Fetch error:', error);
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'Failed to fetch admin list',
-        confirmButtonColor: '#0f8686'
-      });
-    }
+  const validatePassword = (password) => {
+    const minLength = 8;
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasLowerCase = /[a-z]/.test(password);
+    const hasNumbers = /\d/.test(password);
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+    const errors = [];
+    if (password.length < minLength) errors.push(`Password must be at least ${minLength} characters long`);
+    if (!hasUpperCase) errors.push('Password must contain at least one uppercase letter');
+    if (!hasLowerCase) errors.push('Password must contain at least one lowercase letter');
+    if (!hasNumbers) errors.push('Password must contain at least one number');
+    if (!hasSpecialChar) errors.push('Password must contain at least one special character');
+
+    return {
+      isValid: errors.length === 0,
+      errors
+    };
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
   const handleRegister = async (e) => {
     e.preventDefault();
-    try {
-      await axios.post("http://localhost:5000/api/auth/register", {
-        username,
-        password,
+
+    // Validate password
+    const passwordValidation = validatePassword(formData.password);
+    if (!passwordValidation.isValid) {
+      await Swal.fire({
+        icon: 'error',
+        title: 'Invalid Password',
+        html: passwordValidation.errors.join('<br>'),
+        confirmButtonColor: '#0f8686'
       });
+      return;
+    }
+
+    try {
+      await axios.post("http://localhost:5000/api/auth/register", formData);
       
       Swal.fire({
         icon: 'success',
@@ -46,8 +72,15 @@ const Register = () => {
         text: 'Admin registered successfully',
         confirmButtonColor: '#0f8686'
       }).then(() => {
-        setUsername("");
-        setPassword("");
+        setFormData({
+          studentId: "",
+          firstName: "",
+          middleName: "",
+          lastName: "",
+          position: "",
+          username: "",
+          password: ""
+        });
         fetchAdmins();
       });
     } catch (error) {
@@ -61,13 +94,19 @@ const Register = () => {
   };
 
   const handleEdit = (admin) => {
-    console.log('Editing admin:', admin);
     setEditingAdmin({
       id: admin.id,
       username: admin.username
     });
-    setUsername(admin.username);
-    setPassword("");
+    setFormData({
+      studentId: admin.studentId,
+      firstName: admin.firstName,
+      middleName: admin.middleName,
+      lastName: admin.lastName,
+      position: admin.position,
+      username: admin.username,
+      password: ""
+    });
   };
 
   const handleUpdate = async (e) => {
@@ -84,10 +123,14 @@ const Register = () => {
     }
 
     try {
-      console.log('Updating admin:', editingAdmin.id);
       await axios.put(`http://localhost:5000/api/auth/admin/${editingAdmin.id}`, {
-        username,
-        password: password || undefined, // Only send password if it was changed
+        studentId: formData.studentId,
+        firstName: formData.firstName,
+        middleName: formData.middleName,
+        lastName: formData.lastName,
+        position: formData.position,
+        username: formData.username,
+        password: formData.password || undefined
       });
       
       Swal.fire({
@@ -96,8 +139,15 @@ const Register = () => {
         text: 'Admin updated successfully',
         confirmButtonColor: '#0f8686'
       }).then(() => {
-        setUsername("");
-        setPassword("");
+        setFormData({
+          studentId: "",
+          firstName: "",
+          middleName: "",
+          lastName: "",
+          position: "",
+          username: "",
+          password: ""
+        });
         setEditingAdmin(null);
         fetchAdmins();
       });
@@ -144,6 +194,26 @@ const Register = () => {
     }
   };
 
+  useEffect(() => {
+    fetchAdmins();
+  }, []);
+
+  const fetchAdmins = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/api/auth/admins");
+      console.log('Fetched admins:', response.data);
+      setAdmins(response.data);
+    } catch (error) {
+      console.error('Fetch error:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Failed to fetch admin list',
+        confirmButtonColor: '#0f8686'
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50/50 p-6">
       <div className="max-w-4xl mx-auto">
@@ -168,6 +238,84 @@ const Register = () => {
         <div className="bg-white rounded-b-2xl shadow-md p-6">
           <form onSubmit={editingAdmin ? handleUpdate : handleRegister} className="max-w-md mx-auto space-y-6">
             <div className="space-y-4">
+              {/* Student ID */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Student ID
+                </label>
+                <input
+                  type="text"
+                  name="studentId"
+                  value={formData.studentId}
+                  onChange={handleInputChange}
+                  placeholder="Enter student ID"
+                  required
+                  className="block w-full px-3 py-2.5 border border-gray-300 rounded-xl"
+                />
+              </div>
+
+              {/* Name Fields */}
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    First Name
+                  </label>
+                  <input
+                    type="text"
+                    name="firstName"
+                    value={formData.firstName}
+                    onChange={handleInputChange}
+                    required
+                    className="block w-full px-3 py-2.5 border border-gray-300 rounded-xl"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Middle Name
+                  </label>
+                  <input
+                    type="text"
+                    name="middleName"
+                    value={formData.middleName}
+                    onChange={handleInputChange}
+                    className="block w-full px-3 py-2.5 border border-gray-300 rounded-xl"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Last Name
+                  </label>
+                  <input
+                    type="text"
+                    name="lastName"
+                    value={formData.lastName}
+                    onChange={handleInputChange}
+                    required
+                    className="block w-full px-3 py-2.5 border border-gray-300 rounded-xl"
+                  />
+                </div>
+              </div>
+
+              {/* Position Dropdown */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Position
+                </label>
+                <select
+                  name="position"
+                  value={formData.position}
+                  onChange={handleInputChange}
+                  required
+                  className="block w-full px-3 py-2.5 border border-gray-300 rounded-xl"
+                >
+                  <option value="">Select Position</option>
+                  {positions.map(pos => (
+                    <option key={pos} value={pos}>{pos}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Username */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Username
@@ -178,15 +326,17 @@ const Register = () => {
                   </div>
                   <input
                     type="text"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
+                    name="username"
+                    value={formData.username}
+                    onChange={handleInputChange}
                     placeholder="Enter admin username"
                     required
-                    className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition duration-200"
+                    className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-xl"
                   />
                 </div>
               </div>
 
+              {/* Password */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Password
@@ -197,13 +347,17 @@ const Register = () => {
                   </div>
                   <input
                     type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    name="password"
+                    value={formData.password}
+                    onChange={handleInputChange}
                     placeholder="Enter secure password"
                     required
-                    className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition duration-200"
+                    className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-xl"
                   />
                 </div>
+                <p className="mt-1 text-sm text-gray-500">
+                  Password must contain at least 8 characters, one uppercase letter, one number, and one special character.
+                </p>
               </div>
             </div>
 
@@ -219,8 +373,15 @@ const Register = () => {
                   type="button"
                   onClick={() => {
                     setEditingAdmin(null);
-                    setUsername("");
-                    setPassword("");
+                    setFormData({
+                      studentId: "",
+                      firstName: "",
+                      middleName: "",
+                      lastName: "",
+                      position: "",
+                      username: "",
+                      password: ""
+                    });
                   }}
                   className="w-full mt-2 bg-gray-100 text-gray-800 py-2.5 rounded-xl font-medium hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transform transition duration-200"
                 >
@@ -243,7 +404,13 @@ const Register = () => {
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Name
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Username
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Position
                     </th>
                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Actions
@@ -254,13 +421,24 @@ const Register = () => {
                   {admins.map((admin) => (
                     <tr key={admin.admin_id}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {`${admin.last_name}, ${admin.first_name} ${admin.middle_name || ''}`}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {admin.username}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {admin.position}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <button
                           onClick={() => handleEdit({
                             id: admin.admin_id,
-                            username: admin.username
+                            username: admin.username,
+                            firstName: admin.first_name,
+                            middleName: admin.middle_name,
+                            lastName: admin.last_name,
+                            position: admin.position,
+                            studentId: admin.student_id
                           })}
                           className="text-teal-600 hover:text-teal-900 mr-3"
                         >

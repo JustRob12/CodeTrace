@@ -82,40 +82,55 @@ const loginAdmin = (req, res) => {
 
 // Admin Registration Logic
 const registerAdmin = async (req, res) => {
-    const { username, password } = req.body;
+    const { studentId, firstName, middleName, lastName, position, username, password } = req.body;
 
     try {
-        // Check if admin already exists
+        // Check if username already exists
         const [existingAdmin] = await new Promise((resolve, reject) => {
             db.query('SELECT * FROM admins WHERE username = ?', [username], (err, results) => {
                 if (err) reject(err);
-                resolve(results);
+                resolve([results]);
             });
         });
 
-        if (existingAdmin) {
+        if (existingAdmin && existingAdmin.length > 0) {
             return res.status(400).json({ message: 'Username already exists' });
         }
 
+        // Check if student ID already exists
+        const [existingStudentId] = await new Promise((resolve, reject) => {
+            db.query('SELECT * FROM admins WHERE student_id = ?', [studentId], (err, results) => {
+                if (err) reject(err);
+                resolve([results]);
+            });
+        });
+
+        if (existingStudentId && existingStudentId.length > 0) {
+            return res.status(400).json({ message: 'Student ID already registered as admin' });
+        }
+
         // Hash password
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(password, salt);
+        const hashedPassword = await bcrypt.hash(password, 10);
 
         // Insert new admin
-        db.query(
-            'INSERT INTO admins (username, password) VALUES (?, ?)',
-            [username, hashedPassword],
-            (err) => {
-                if (err) {
-                    console.error('Database error:', err);
-                    return res.status(500).json({ message: 'Error saving admin' });
+        await new Promise((resolve, reject) => {
+            db.query(
+                'INSERT INTO admins (student_id, first_name, middle_name, last_name, position, username, password) VALUES (?, ?, ?, ?, ?, ?, ?)',
+                [studentId, firstName, middleName, lastName, position, username, hashedPassword],
+                (err, results) => {
+                    if (err) reject(err);
+                    resolve(results);
                 }
-                res.status(201).json({ message: 'Admin registered successfully' });
-            }
-        );
+            );
+        });
+
+        res.status(201).json({ message: 'Admin registered successfully' });
     } catch (error) {
         console.error('Registration error:', error);
-        res.status(500).json({ message: 'Server error' });
+        res.status(500).json({ 
+            message: 'Error registering admin',
+            error: error.message 
+        });
     }
 };
 
@@ -554,27 +569,23 @@ const getStudentAttendance = (req, res) => {
 };
 
 // Get all admins
-const getAdmins = (req, res) => {
+const getAdmins = async (req, res) => {
     try {
-        const query = 'SELECT admin_id, username FROM admins';
-        console.log('Executing query:', query);
-        
-        db.query(query, (err, results) => {
-            if (err) {
-                console.error('Database error:', err);
-                return res.status(500).json({ 
-                    message: 'Error fetching admins',
-                    error: err.message 
-                });
-            }
-            
-            console.log('Fetched admins:', results);
-            res.status(200).json(results);
+        const [admins] = await new Promise((resolve, reject) => {
+            db.query(
+                'SELECT admin_id, student_id, first_name, middle_name, last_name, position, username, created_at, updated_at FROM admins',
+                (err, results) => {
+                    if (err) reject(err);
+                    resolve([results]);
+                }
+            );
         });
+
+        res.json(admins);
     } catch (error) {
-        console.error('Server error:', error);
+        console.error('Error fetching admins:', error);
         res.status(500).json({ 
-            message: 'Server error',
+            message: 'Error fetching admins',
             error: error.message 
         });
     }
@@ -583,45 +594,60 @@ const getAdmins = (req, res) => {
 // Update admin
 const updateAdmin = async (req, res) => {
     const { id } = req.params;
-    const { username, password } = req.body;
+    const { studentId, firstName, middleName, lastName, position, username, password } = req.body;
 
     try {
         // Check if username already exists for other admins
         const [existingAdmin] = await new Promise((resolve, reject) => {
-            db.query('SELECT * FROM admins WHERE username = ? AND admin_id != ?', [username, id], (err, results) => {
+            db.query(
+                'SELECT * FROM admins WHERE username = ? AND admin_id != ?', 
+                [username, id], 
+                (err, results) => {
+                    if (err) reject(err);
+                    resolve([results]);
+                }
+            );
+        });
+
+        if (existingAdmin && existingAdmin.length > 0) {
+            return res.status(400).json({ message: 'Username already exists' });
+        }
+
+        let updateQuery = `
+            UPDATE admins 
+            SET student_id = ?, 
+                first_name = ?, 
+                middle_name = ?, 
+                last_name = ?, 
+                position = ?, 
+                username = ?
+        `;
+        let queryParams = [studentId, firstName, middleName, lastName, position, username];
+
+        // Only update password if it's provided
+        if (password) {
+            const hashedPassword = await bcrypt.hash(password, 10);
+            updateQuery += ', password = ?';
+            queryParams.push(hashedPassword);
+        }
+
+        updateQuery += ' WHERE admin_id = ?';
+        queryParams.push(id);
+
+        await new Promise((resolve, reject) => {
+            db.query(updateQuery, queryParams, (err, results) => {
                 if (err) reject(err);
                 resolve(results);
             });
         });
 
-        if (existingAdmin) {
-            return res.status(400).json({ message: 'Username already exists' });
-        }
-
-        let sql = 'UPDATE admins SET username = ?';
-        let params = [username];
-
-        // Only update password if it's provided
-        if (password) {
-            const salt = await bcrypt.genSalt(10);
-            const hashedPassword = await bcrypt.hash(password, salt);
-            sql += ', password = ?';
-            params.push(hashedPassword);
-        }
-
-        sql += ' WHERE admin_id = ?';
-        params.push(id);
-
-        db.query(sql, params, (err) => {
-            if (err) {
-                console.error('Database error:', err);
-                return res.status(500).json({ message: 'Error updating admin' });
-            }
-            res.status(200).json({ message: 'Admin updated successfully' });
-        });
+        res.json({ message: 'Admin updated successfully' });
     } catch (error) {
         console.error('Update error:', error);
-        res.status(500).json({ message: 'Server error' });
+        res.status(500).json({ 
+            message: 'Error updating admin',
+            error: error.message 
+        });
     }
 };
 
