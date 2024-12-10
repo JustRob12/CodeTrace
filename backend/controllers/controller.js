@@ -1,27 +1,28 @@
-const crypto = require('crypto');
+const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const db = require('../config/db');
-const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
+const { logAdminActivity } = require('../utils/logger');
 
 // Add these encryption helper functions at the top of your file
 const ENCRYPTION_KEY = crypto.scryptSync(process.env.ENCRYPTION_KEY || 'your-secret-key', 'salt', 32);
-const IV_LENGTH = 16;
+const ALGORITHM = 'aes-256-cbc';
 
+// Encryption function
 const encrypt = (text) => {
-    const iv = crypto.randomBytes(IV_LENGTH);
-    const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(ENCRYPTION_KEY), iv);
-    let encrypted = cipher.update(text);
-    encrypted = Buffer.concat([encrypted, cipher.final()]);
-    return iv.toString('hex') + ':' + encrypted.toString('hex');
+    const iv = crypto.randomBytes(16);
+    const cipher = crypto.createCipheriv(ALGORITHM, ENCRYPTION_KEY, iv);
+    const encrypted = Buffer.concat([cipher.update(text), cipher.final()]);
+    return `${iv.toString('hex')}:${encrypted.toString('hex')}`;
 };
 
+// Decryption function
 const decrypt = (text) => {
     const [ivHex, encryptedHex] = text.split(':');
     const iv = Buffer.from(ivHex, 'hex');
     const encrypted = Buffer.from(encryptedHex, 'hex');
-    const decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(ENCRYPTION_KEY), iv);
-    let decrypted = decipher.update(encrypted);
-    decrypted = Buffer.concat([decrypted, decipher.final()]);
+    const decipher = crypto.createDecipheriv(ALGORITHM, ENCRYPTION_KEY, iv);
+    const decrypted = Buffer.concat([decipher.update(encrypted), decipher.final()]);
     return decrypted.toString();
 };
 
@@ -43,6 +44,7 @@ const generatePassword = (student) => {
 // Admin Login Logic
 const loginAdmin = (req, res) => {
     const { username, password } = req.body;
+    const ipAddress = req.ip || req.connection.remoteAddress;
     
     db.query('SELECT * FROM admins WHERE username = ?', [username], async (err, results) => {
         if (err) {
@@ -67,6 +69,15 @@ const loginAdmin = (req, res) => {
                 { id: admin.id, type: 'admin' },
                 process.env.JWT_SECRET || 'your-secret-key',
                 { expiresIn: '1h' }
+            );
+
+            // Log the successful login
+            await logAdminActivity(
+                admin.admin_id,
+                'LOGIN',
+                null,
+                'Admin logged in successfully',
+                ipAddress
             );
 
             res.json({ 
@@ -138,6 +149,8 @@ const registerAdmin = async (req, res) => {
 const registerStudent = (req, res) => {
     const { lastname, firstname, middlename, studentId, year, section, contactNumber, gmail, password } = req.body;
     const responses = [];
+    const ipAddress = req.ip || req.connection.remoteAddress;
+    const adminId = req.user ? req.user.id : null; // Assuming you have middleware that sets req.user
 
     if (!lastname || !firstname || !studentId || !year || !section || !contactNumber || !gmail || !password) {
         responses.push({ message: 'All fields are required' });
@@ -167,7 +180,7 @@ const registerStudent = (req, res) => {
                 db.query(
                     'INSERT INTO students (lastname, firstname, middlename, studentId, year, section, contactNumber, gmail) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', 
                     [lastname, firstname, middlename, studentId, year, section, contactNumber, gmail], 
-                    (insertErr) => {
+                    async (insertErr) => {
                         if (insertErr) {
                             console.error('Database error:', insertErr);
                             responses.push({ message: 'Error saving student' });
@@ -178,11 +191,22 @@ const registerStudent = (req, res) => {
                         db.query(
                             'INSERT INTO student_accounts (studentId, username, password, isFirstLogin) VALUES (?, ?, ?, TRUE)',
                             [studentId, studentId, encryptedPassword],
-                            (accountErr) => {
+                            async (accountErr) => {
                                 if (accountErr) {
                                     console.error('Database error:', accountErr);
                                     responses.push({ message: 'Error creating student account' });
                                     return res.status(500).json(responses);
+                                }
+
+                                // Log the student creation
+                                if (adminId) {
+                                    await logAdminActivity(
+                                        adminId,
+                                        'CREATE_STUDENT',
+                                        studentId,
+                                        `Created student: ${firstname} ${lastname}`,
+                                        ipAddress
+                                    );
                                 }
 
                                 responses.push({ 
@@ -204,6 +228,89 @@ const registerStudent = (req, res) => {
             }
         }
     );
+};
+
+// Delete Student Logic
+const deleteStudent = async (req, res) => {
+    const { studentId } = req.params;
+    const ipAddress = req.ip || req.connection.remoteAddress;
+    const adminId = req.user ? req.user.id : null;
+
+    try {
+        // Get student details before deletion for logging
+        const [student] = await new Promise((resolve, reject) => {
+            db.query('SELECT * FROM students WHERE studentId = ?', [studentId], (err, results) => {
+                if (err) reject(err);
+                resolve(results);
+            });
+        });
+
+        if (!student) {
+            return res.status(404).json({ message: 'Student not found' });
+        }
+
+        // Delete the student
+        await new Promise((resolve, reject) => {
+            db.query('DELETE FROM students WHERE studentId = ?', [studentId], (err) => {
+                if (err) reject(err);
+                resolve();
+            });
+        });
+
+        // Log the deletion
+        if (adminId) {
+            await logAdminActivity(
+                adminId,
+                'DELETE_STUDENT',
+                studentId,
+                `Deleted student: ${student.firstname} ${student.lastname}`,
+                ipAddress
+            );
+        }
+
+        res.json({ message: 'Student deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting student:', error);
+        res.status(500).json({ message: 'Error deleting student' });
+    }
+};
+
+// Update Student Logic
+const updateStudent = async (req, res) => {
+    const { studentId } = req.params;
+    const updates = req.body;
+    const ipAddress = req.ip || req.connection.remoteAddress;
+    const adminId = req.user ? req.user.id : null;
+
+    try {
+        // Update the student
+        await new Promise((resolve, reject) => {
+            db.query(
+                'UPDATE students SET ? WHERE studentId = ?',
+                [updates, studentId],
+                (err) => {
+                    if (err) reject(err);
+                    resolve();
+                }
+            );
+        });
+
+        // Log the update
+        if (adminId) {
+            await logAdminActivity(
+                adminId,
+                'UPDATE_STUDENT',
+                studentId,
+                `Updated student information: ${JSON.stringify(updates)}`,
+                ipAddress
+            );
+        }
+
+        res.json({ message: 'Student updated successfully' });
+    } catch (error) {
+        console.error('Error updating student:', error);
+        res.status(500).json({ message: 'Error updating student' });
+    }
 };
 
 // View Students Logic
@@ -232,72 +339,50 @@ const viewStudents = (req, res) => {
     });
 };
 
-// Delete Student Logic
-const deleteStudent = (req, res) => {
-    const { studentId } = req.params;
-    const responses = [];
-
-    db.query('DELETE FROM students WHERE studentId = ?', [studentId], (err, result) => {
-        if (err) {
-            responses.push({ message: 'Error deleting student' });
-            return res.status(500).json(responses);
-        }
-        if (result.affectedRows === 0) {
-            responses.push({ message: 'Student not found' });
-            return res.status(404).json(responses);
-        }
-        responses.push({ message: 'Student deleted successfully' });
-        res.status(200).json(responses);
-    });
-};
-
-// Update Student Logic
-const updateStudent = (req, res) => {
-    const { studentId } = req.params;
-    const { lastname, firstname, middlename, year, section, contactNumber, gmail } = req.body; // Include gmail
-    const responses = [];
-
-    if (!lastname || !firstname || !studentId || !year || !section || !contactNumber || !gmail) { // Check for Gmail
-        responses.push({ message: 'All fields are required' });
-        return res.status(400).json(responses);
-    }
-
-    const sql = 'UPDATE students SET lastname = ?, firstname = ?, middlename = ?, year = ?, section = ?, contactNumber = ?, gmail = ? WHERE studentId = ?'; // Include gmail in update
-    db.query(sql, [lastname, firstname, middlename, year, section, contactNumber, gmail, studentId], (err, result) => {
-        if (err) {
-            console.error('Database error:', err); // Log the error
-            responses.push({ message: 'Error updating student' });
-            return res.status(500).json(responses);
-        }
-        if (result.affectedRows === 0) {
-            responses.push({ message: 'Student not found' });
-            return res.status(404).json(responses);
-        }
-        responses.push({ message: 'Student updated successfully' });
-        res.status(200).json(responses);
-    });
-};
-
 // Add Event Logic
 const addEvents = (req, res) => {
     const { event_name, event_description, event_start, event_end } = req.body;
     const responses = [];
     
+    // Basic validation
     if (!event_name || !event_start || !event_end) {
-        responses.push({ message: 'All fields are required' });
+        responses.push({ message: 'Event name, start date, and end date are required' });
         return res.status(400).json(responses);
     }
+
+    // Date validation
+    const startDate = new Date(event_start);
+    const endDate = new Date(event_end);
+
+    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+        responses.push({ message: 'Invalid date format' });
+        return res.status(400).json(responses);
+    }
+
+    if (endDate < startDate) {
+        responses.push({ message: 'End date cannot be before start date' });
+        return res.status(400).json(responses);
+    }
+
+    // Convert event_description to NULL if it's an empty string
+    const description = event_description || null;
+    
+    const sql = 'INSERT INTO events (event_name, event_description, event_start, event_end) VALUES (?, ?, ?, ?)';
     
     db.query(
-        'INSERT INTO events (event_name, event_description, event_start, event_end) VALUES (?, ?, ?, ?)',
-        [event_name, event_description, event_start, event_end],
-        (err) => {
+        sql,
+        [event_name, description, startDate, endDate],
+        (err, result) => {
             if (err) {
                 console.error('Database error:', err);
-                responses.push({ message: 'Error saving event' });
+                responses.push({ message: 'Error saving event', error: err.message });
                 return res.status(500).json(responses);
             }
-            responses.push({ message: 'Event added successfully' });
+            
+            responses.push({ 
+                message: 'Event added successfully',
+                eventId: result.insertId 
+            });
             res.status(201).json(responses);
         }
     );
@@ -322,22 +407,48 @@ const viewEvents = (req, res) => {
 };
 
 // Delete Event Logic
-const deleteEvent = (req, res) => {
+const deleteEvent = async (req, res) => {
     const { id } = req.params;
-    const responses = [];
-    
-    db.query('DELETE FROM events WHERE id = ?', [id], (err, result) => {
-        if (err) {
-            responses.push({ message: 'Error deleting event' });
-            return res.status(500).json(responses);
+    const ipAddress = req.ip || req.connection.remoteAddress;
+    const adminId = req.user ? req.user.id : null;
+
+    try {
+        // Get event details before deletion for logging
+        const [event] = await new Promise((resolve, reject) => {
+            db.query('SELECT * FROM events WHERE id = ?', [id], (err, results) => {
+                if (err) reject(err);
+                resolve(results);
+            });
+        });
+
+        if (!event) {
+            return res.status(404).json({ message: 'Event not found' });
         }
-        if (result.affectedRows === 0) {
-            responses.push({ message: 'Event not found' });
-            return res.status(404).json(responses);
+
+        // Delete the event
+        await new Promise((resolve, reject) => {
+            db.query('DELETE FROM events WHERE id = ?', [id], (err) => {
+                if (err) reject(err);
+                resolve();
+            });
+        });
+
+        // Log the event deletion
+        if (adminId) {
+            await logAdminActivity(
+                adminId,
+                'DELETE_EVENT',
+                id,
+                `Deleted event: ${event.name}`,
+                ipAddress
+            );
         }
-        responses.push({ message: 'Event deleted successfully' });
-        res.status(200).json(responses);
-    });
+
+        res.json({ message: 'Event deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting event:', error);
+        res.status(500).json({ message: 'Error deleting event' });
+    }
 };
 
 // Check In Logic
