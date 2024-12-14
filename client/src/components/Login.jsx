@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaUser, FaLock, FaFingerprint } from 'react-icons/fa';
 import background from '../assets/background.jpg';
+import Swal from 'sweetalert2';
 
 const Login = () => {
   const [username, setUsername] = useState("");
@@ -21,10 +22,47 @@ const Login = () => {
     }
   }, [navigate]);
 
+  const validatePassword = (password) => {
+    const minLength = 8;
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasLowerCase = /[a-z]/.test(password);
+    const hasNumbers = /\d/.test(password);
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+    const errors = [];
+    if (password.length < minLength) errors.push(`Password must be at least ${minLength} characters long`);
+    if (!hasUpperCase) errors.push('Password must contain at least one uppercase letter');
+    if (!hasLowerCase) errors.push('Password must contain at least one lowercase letter');
+    if (!hasNumbers) errors.push('Password must contain at least one number');
+    if (!hasSpecialChar) errors.push('Password must contain at least one special character');
+
+    return {
+      isValid: errors.length === 0,
+      errors
+    };
+  };
+
   const handlePasswordChange = async (e) => {
     e.preventDefault();
+    
+    const validation = validatePassword(newPassword);
+    if (!validation.isValid) {
+      await Swal.fire({
+        title: 'Invalid Password',
+        html: validation.errors.join('<br>'),
+        icon: 'error',
+        confirmButtonColor: '#0f8686'
+      });
+      return;
+    }
+
     if (newPassword !== confirmPassword) {
-      alert("Passwords do not match!");
+      await Swal.fire({
+        title: 'Error',
+        text: 'Passwords do not match!',
+        icon: 'error',
+        confirmButtonColor: '#0f8686'
+      });
       return;
     }
 
@@ -34,10 +72,21 @@ const Login = () => {
         newPassword,
       });
 
-      // After successful password change, proceed to dashboard
+      await Swal.fire({
+        title: 'Success',
+        text: 'Password changed successfully!',
+        icon: 'success',
+        confirmButtonColor: '#0f8686'
+      });
+
       navigate("/student-dashboard");
     } catch (error) {
-      alert("Error changing password. Please try again.");
+      await Swal.fire({
+        title: 'Error',
+        text: 'Error changing password. Please try again.',
+        icon: 'error',
+        confirmButtonColor: '#0f8686'
+      });
     }
   };
 
@@ -70,7 +119,19 @@ const Login = () => {
           navigate("/student-dashboard");
         }
       } catch (studentError) {
-        alert("Invalid credentials. Please try again.");
+        await Swal.fire({
+          title: 'Login Failed',
+          text: 'Invalid username or password. Please try again.',
+          icon: 'error',
+          confirmButtonColor: '#0f8686',
+          confirmButtonText: 'Try Again',
+          showClass: {
+            popup: 'animate__animated animate__fadeInDown'
+          },
+          hideClass: {
+            popup: 'animate__animated animate__fadeOutUp'
+          }
+        });
       }
     } finally {
       setIsLoading(false);
@@ -173,6 +234,18 @@ const Login = () => {
                 <div className="text-center mb-6">
                   <h2 className="text-xl font-semibold text-gray-800">Change Your Password</h2>
                   <p className="text-sm text-gray-600">Please set a new password for your account</p>
+                </div>
+
+                {/* Password requirements info */}
+                <div className="bg-gray-50 p-3 rounded-lg mb-4">
+                  <p className="text-sm font-medium text-gray-700 mb-2">Password must contain:</p>
+                  <ul className="text-xs text-gray-600 space-y-1">
+                    <li>• At least 8 characters</li>
+                    <li>• At least one uppercase letter</li>
+                    <li>• At least one lowercase letter</li>
+                    <li>• At least one number</li>
+                    <li>• At least one special character (!@#$%^&*(),.?":{}|&lt;&gt;)</li>
+                  </ul>
                 </div>
 
                 <div className="relative">
