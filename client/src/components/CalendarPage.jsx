@@ -9,7 +9,7 @@ import { FaCalendarAlt, FaPlus, FaClock, FaTrash, FaBell } from 'react-icons/fa'
 import "./CalendarPage.css";
 import Swal from "sweetalert2";
 
-Modal.setAppElement("#root");
+Modal.setAppElement("#root"); 
 
 const CalendarPage = () => {
   const [events, setEvents] = useState([]);
@@ -45,53 +45,71 @@ const CalendarPage = () => {
 
   // Handle event creation
   const handleSaveEvent = async () => {
-    if (eventTitle && eventStart && eventEnd) {
-      const newEvent = {
-        event_name: eventTitle,
-        event_description: null,
-        event_start: eventStart,
-        event_end: eventEnd,
-      };
+    try {
+        // Check if all required fields are filled
+        if (!eventTitle || !eventStart || !eventEnd) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Missing Information',
+                text: 'Please fill in all required fields',
+                confirmButtonColor: '#0f8686'
+            });
+            return;
+        }
 
-      try {
-        const response = await axios.post(
-          "http://localhost:5000/api/auth/event",
-          newEvent
-        );
-        const addedEvent = {
-          id: response.data.id,
-          title: response.data.event_name,
-          start: response.data.event_start,
-          end: response.data.event_end,
-        };
-        setEvents((prevEvents) => [...prevEvents, addedEvent]);
-        clearForm();
+        // Create Date objects from the input values
+        const startDate = new Date(eventStart);
+        const endDate = new Date(eventEnd);
 
-        // Show success message and wait for it to close
-        await Swal.fire({
-          title: 'Success!',
-          text: 'Event has been added successfully!',
-          icon: 'success',
-          confirmButtonColor: '#0f8686'
+        // Validate dates
+        if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Invalid Date',
+                text: 'Please enter valid dates',
+                confirmButtonColor: '#0f8686'
+            });
+            return;
+        }
+
+        if (endDate < startDate) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Invalid Date Range',
+                text: 'End date cannot be before start date',
+                confirmButtonColor: '#0f8686'
+            });
+            return;
+        }
+
+        const response = await axios.post('http://localhost:5000/api/auth/event', {
+            event_name: eventTitle,
+            event_description: null, // Add description if needed
+            event_start: startDate.toISOString(),
+            event_end: endDate.toISOString()
         });
 
-        // Reload page after alert is closed
-        window.location.reload();
-      } catch (error) {
+        if (response.data && response.data[0].message === 'Event added successfully') {
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: 'Event added successfully',
+                confirmButtonColor: '#0f8686'
+            });
+            
+            // Clear form and refresh events
+            clearForm();
+            fetchEvents();
+        }
+    } catch (error) {
+        console.error('Error saving event:', error);
+        
         Swal.fire({
-          title: 'Error!',
-          text: error.response?.data?.message || 'Failed to add event.',
-          icon: 'error',
-          confirmButtonColor: '#0f8686'
+            icon: 'error',
+            title: 'Error',
+            text: error.response?.data?.[0]?.message || 'Failed to save event',
+            confirmButtonColor: '#0f8686'
         });
-      }
-    } else {
-      Swal.fire({
-        title: 'Warning!',
-        text: 'Please fill in all required fields.',
-        icon: 'warning',
-        confirmButtonColor: '#0f8686'
-      });
     }
   };
 

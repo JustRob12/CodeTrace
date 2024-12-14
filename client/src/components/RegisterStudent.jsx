@@ -246,22 +246,7 @@ const RegisterStudent = () => {
                 </div>
               </div>
 
-              {/* One-Time Password */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">One-Time Password</label>
-                <div className="relative">
-                  <input
-                    type="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    required
-                    className="pl-10 w-full p-3 border border-teal-100 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition duration-200"
-                    placeholder="Enter one-time password"
-                  />
-                  <FaLock className="absolute left-3 top-1/2 -translate-y-1/2 text-teal-500" />
-                </div>
-              </div>
+          
 
               {/* Submit Button */}
               <div className="col-span-1 sm:col-span-2">
